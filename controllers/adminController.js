@@ -30,7 +30,7 @@ const verifyAdminLogin = async(req,res) => {
             const matchPassword = await bcrypt.compare(password,findAdmin.password);
             if(matchPassword){
                 req.session.admin = true
-                res.render("adminView/dashBoard");
+                res.redirect("/admin");
                 console.log("Admin logged successfully");
             }
             else{
@@ -55,6 +55,7 @@ const getLogout = (req,res) => {
     try {
         req.session.admin = null
         res.redirect("/admin/login")
+        console.log("admin logout success");
     } catch (error) {
         console.log("Admin logout error occured",error.message);
     }

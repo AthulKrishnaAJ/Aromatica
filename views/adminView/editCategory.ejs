@@ -50,7 +50,7 @@
                 <!-- Products -->
 
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/products"> <i class="icon material-icons md-shopping_bag"></i>
+                    <a class="menu-link" href="/admin/product"> <i class="icon material-icons md-shopping_bag"></i>
                         <span class="text">Products</span>
                     </a>
                 </li>
@@ -69,7 +69,7 @@
                 </li>
              
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/addProducts"> <i class="icon material-icons md-add_box"></i>
+                    <a class="menu-link" href="/admin/addProduct"> <i class="icon material-icons md-add_box"></i>
                         <span class="text">Add product</span>
                     </a>
                   
@@ -175,30 +175,86 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 mt-60">
-            <form method="post" action="">
+            <form method="post" action="/admin/editCategory/<%= category.id %>" onsubmit="return validation()">
                 <div class="d-grid text-end mt-30 col-md-5">
                     <button class="btn btn-primary" type="submit">Update category</button>
                 </div>
                 <div class="mb-4 mt-30">
                     <label for="product_name" class="form-label">Name</label>
-                    <input type="text" name="categoryName" value="" class="form-control border" />
+                    <input type="text" name="categoryName" value="<%= category.name %>" class="form-control border" id="nameError" />
+                    <span id="nameErrorMessage" class="text-danger text-center"></span>
                 </div>
                 
                 <div class="mb-4">
                     <label class="form-label">Description</label>
-                    <textarea name="description" class="form-control border"></textarea>
+                    <textarea name="description" class="form-control border" id="descriptionError"><%= category.description %></textarea>
+                    <span id="descriptionErrorMessage" class="text-danger text-center"></span>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
+</main>
 
 
 <!--Footer start----------------------------------------------------------------------------->
 
+<script>
+const nameErrorMessage = document.getElementById("nameErrorMessage")
+const descriptionErrorMessage = document.getElementById("descriptionErrorMessage")
+        
 
-</main>
+     function validation(){
+        
+        const nameError = document.getElementById("nameError")
+        const descriptionError = document.getElementById("descriptionError")
+    
+        const nameRegex = /^[a-zA-Z]+$/; 
+        const descriptionRegex = /^[\s\S]{10,}$/;
+        const notNumberRegex = /^[^\d]*$/;
+
+
+        // Name validation
+        if(nameError.value.trim() === "" || nameError.value === null){
+            nameErrorMessage.innerHTML = "Name is required"
+            return false;
+        }
+        else if(!nameRegex.test(nameError.value)){
+            nameErrorMessage.innerHTML = "Should contains only alphabets"
+            return false;
+        }
+        else{
+            nameErrorMessage.innerHTML = ""
+            
+        }
+       
+    
+        // Description validation
+        if(descriptionError.value.trim() === "" || descriptionError.value === null){
+            descriptionErrorMessage.innerHTML = "Description is required"
+            return false;
+        }
+        else if(!notNumberRegex.test(descriptionError.value)){
+            descriptionErrorMessage.innerHTML = "Numbers not allowed"
+            return false
+        }
+        else if(!descriptionRegex.test(descriptionError.value)){
+            descriptionErrorMessage.innerHTML = "Enter atleast 10 letters"
+            return false
+        }
+        else{
+            descriptionErrorMessage.innerHTML = ""
+           
+        }
+      
+
+   
+        return true;
+
+    }
+    
+</script>
+
 <script src="admin-assets/js/vendors/jquery-3.6.0.min.js"></script>
 <script src="admin-assets/js/vendors/bootstrap.bundle.min.js"></script>
 <script src="admin-assets/js/vendors/select2.min.js"></script>

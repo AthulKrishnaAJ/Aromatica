@@ -52,7 +52,7 @@
                 <!-- Products -->
 
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/products"> <i class="icon material-icons md-shopping_bag"></i>
+                    <a class="menu-link" href="/admin/product"> <i class="icon material-icons md-shopping_bag"></i>
                         <span class="text">Products</span>
                     </a>
                 </li>
@@ -71,7 +71,7 @@
                 </li>
              
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/addProducts"> <i class="icon material-icons md-add_box"></i>
+                    <a class="menu-link" href="/admin/addProduct"> <i class="icon material-icons md-add_box"></i>
                         <span class="text">Add product</span>
                     </a>
                   
@@ -236,16 +236,18 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-3">
-                    <form method="post" action="/admin/addCategory">
+                    <form method="post" action="/admin/addCategory" onsubmit="return validation()">
                         <div class="mb-4">
                             <label for="product_name" class="form-label">Name</label>
                             <input type="text" name="name" placeholder="Type here" class="form-control" id="product_name" required/>
+                            <span id="nameErrorMessage" class="text-danger text-center"></span>
                         </div>
                        
                       
                         <div class="mb-4">
                             <label class="form-label">Description</label>
-                            <textarea placeholder="Type here" name="description" class="form-control" required></textarea>
+                            <textarea placeholder="Type here" name="description" class="form-control" id="descriptionError" required></textarea>
+                            <span id="descriptionErrorMessage" class="text-danger text-center"></span>
                         </div>
                         <div class="d-grid">
                             <button class="btn btn-primary" type="submit">Create category</button>
@@ -300,7 +302,7 @@
                                         </td>
                                         <td class="text-start">
                                             <button class="btn btn-info">
-                                                <a href="/admin/editCategory" class="text-white">Edit</a>
+                                                <a href="/admin/editCategory?id=<%=category[i]._id %>" class="text-white">Edit</a>
                                             </button>
                                         </td>
                                     </tr>
@@ -318,12 +320,73 @@
 </section> <!-- content-main end// -->
 
 
-
-<!--Footer start-->
-
-
-
 </main>
+
+<!--Footer start--------------------------------------------------------------------->
+
+<script>
+
+const nameErrorMessage = document.getElementById("nameErrorMessage")
+const descriptionErrorMessage = document.getElementById("descriptionErrorMessage")
+        
+
+     function validation(){
+        
+        const nameError = document.getElementById("product_name")
+        const descriptionError = document.getElementById("descriptionError")
+    
+        const nameRegex = /^[a-zA-Z]+$/; 
+        const descriptionRegex = /^[\s\S]{10,}$/;
+        const notNumberRegex = /^[^\d]*$/;
+
+
+        // Name validation
+        if(nameError.value.trim() === "" || nameError.value === null){
+            nameErrorMessage.innerHTML = "Name is required"
+            return false;
+        }
+        else if(!nameRegex.test(nameError.value)){
+            nameErrorMessage.innerHTML = "Should contains only alphabets"
+            return false;
+        }
+        else{
+            nameErrorMessage.innerHTML = ""
+            
+        }
+       
+    
+        // Description validation
+        if(descriptionError.value.trim() === "" || descriptionError.value === null){
+            descriptionErrorMessage.innerHTML = "Description is required"
+            return false;
+        }
+        else if(!notNumberRegex.test(descriptionError.value)){
+            descriptionErrorMessage.innerHTML = "Numbers not allowed"
+            return false
+        }
+        else if(!descriptionRegex.test(descriptionError.value)){
+            descriptionErrorMessage.innerHTML = "Enter atleast 10 letters"
+            return false
+        }
+        else{
+            descriptionErrorMessage.innerHTML = ""
+           
+        }
+      
+
+   
+        return true;
+
+    }
+    // document.getElementById("product_name").addEventListener("input",validation);
+    // document.getElementById("descriptionError").addEventListener("input",validation);
+
+   
+
+
+
+</script>
+
 <script src="admin-assets/js/vendors/jquery-3.6.0.min.js"></script>
 <script src="admin-assets/js/vendors/bootstrap.bundle.min.js"></script>
 <script src="admin-assets/js/vendors/select2.min.js"></script>

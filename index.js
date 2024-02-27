@@ -51,6 +51,7 @@ app.use(cookieParser());
 app.use(nocache());
 
 app.use(express.static(path.join(__dirname,"public")));
+app.use(express.static(path.join(__dirname,"public1")));
 
 
 
@@ -74,6 +75,9 @@ app.use("/admin",adminRoute);
 app.listen(Port,() => {
     console.log(`server runnig on http://localhost:${Port}`);
 })
+
+
+
 
 
 

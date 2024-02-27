@@ -63,6 +63,7 @@ const getAllCategory = async(req,res) =>{
 
 
 
+
 const listCategory = async(req,res) => {
     try{
         const id = req.query.id
@@ -75,6 +76,7 @@ const listCategory = async(req,res) => {
     }
 }
 
+
 const unListCategory = async(req,res) => {
     try{
         const id = req.query.id
@@ -86,11 +88,46 @@ const unListCategory = async(req,res) => {
     }
 }
 
+
+
+
 const getEditCategory = async(req,res) => {
     try{
-        res.render("adminView/editCategory")
+        const id = req.query.id
+        const category = await Category.findOne({_id : id})
+        res.render("adminView/editCategory",{category : category})
+        console.log(category)
+        console.log("1");
     }catch(error){
         console.log("Get error in edit category page",error.message);
+    }
+}
+
+
+
+const updateCategory = async(req,res) => {
+    try{
+        const id = req.params.id
+        const {name,description} = req.body
+        const findCategory = await Category.find({_id : id})
+        if(findCategory){
+            await Category.updateOne(
+                {_id : id},
+                {
+                    name : name,
+                    description : description
+                }
+            )
+            res.redirect("/admin/category");
+            console.log("Category updated");
+        }
+        else{
+            console.log("Cannot find category for updating");
+        }
+
+
+    }catch(error){
+        console.log(`Error occured in update category ${error.message} `);
     }
 }
 
@@ -101,7 +138,8 @@ module.exports = {
     getAllCategory,
     listCategory,
     unListCategory,
-    getEditCategory
+    getEditCategory,
+    updateCategory
 
 }
 

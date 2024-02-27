@@ -5,17 +5,24 @@ const bcrypt = require("bcrypt");
 
 
 const User = require("../models/userModel");
+const Products = require("../models/productModel");
 const userHelper = require("../helpers/userHelper");
+const { use } = require("bcrypt/promises");
 
 
 //Load home Page
-const loadHomePage = (req,res) => {
+const loadHomePage = async(req,res) => {
     try{
-        if(req.url === "/"){
-            res.render("userView/home");
+        const user = req.session.user;
+        const findUser = await User.findOne({});
+        console.log("get find user");
+        const productsData = await Products.find({isBlocked : false}).sort({ id : -1}).limit(4);   
+        if(user){
+
+            res.render("userView/home",{user : findUser , product : productsData});
         }
         else{
-            res.status(404).send("<h1>404 Page not found</h1>");
+            res.render("userView/home",{product : productsData});
         }
     }catch(error){
         console.log(error.message);
@@ -23,6 +30,8 @@ const loadHomePage = (req,res) => {
     }
 
 }
+
+
 
 // Load login page
 const loadUserLoginPage = (req,res) => {
@@ -165,7 +174,7 @@ const verifyOtp = async(req,res) => {
 
             const newUser = new User({
                 name:userData.name,
-                email:userData.email,
+                email:userData.email,   
                 mobile:userData.mobile,
                 password:passwordHash
             });
