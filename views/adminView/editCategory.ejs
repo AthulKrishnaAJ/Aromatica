@@ -14,6 +14,7 @@
     <meta property="og:type" content="">
     <meta property="og:url" content="">
     <meta property="og:image" content="">
+    <!-- <meta http-equiv="refresh" content="0;url=/admin/category"> -->
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="admin-assets/imgs/theme/favicon.svg">
     <!-- Template CSS -->
@@ -175,13 +176,11 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 mt-60">
-            <form method="post" action="/admin/editCategory/<%= category.id %>" onsubmit="return validation()">
-                <div class="d-grid text-end mt-30 col-md-5">
-                    <button class="btn btn-primary" type="submit">Update category</button>
-                </div>
+            <form method="post" action="/admin/editCategory/<%= category._id %>" onsubmit="return validation()">
+               
                 <div class="mb-4 mt-30">
                     <label for="product_name" class="form-label">Name</label>
-                    <input type="text" name="categoryName" value="<%= category.name %>" class="form-control border" id="nameError" />
+                    <input type="text" name="categoryName" value="<%= category.name %>" class="form-control border" id="nameError" >
                     <span id="nameErrorMessage" class="text-danger text-center"></span>
                 </div>
                 
@@ -189,6 +188,9 @@
                     <label class="form-label">Description</label>
                     <textarea name="description" class="form-control border" id="descriptionError"><%= category.description %></textarea>
                     <span id="descriptionErrorMessage" class="text-danger text-center"></span>
+                </div>
+                <div class="d-grid text-end mt-30 col-md-5">
+                    <button class="btn btn-primary" type="submit">Update category</button>
                 </div>
             </form>
         </div>
@@ -209,15 +211,20 @@ const descriptionErrorMessage = document.getElementById("descriptionErrorMessage
         const nameError = document.getElementById("nameError")
         const descriptionError = document.getElementById("descriptionError")
     
-        const nameRegex = /^[a-zA-Z]+$/; 
+        const nameRegex = /^[a-zA-Z]+(?: [a-zA-Z]+)*$/;
         const descriptionRegex = /^[\s\S]{10,}$/;
         const notNumberRegex = /^[^\d]*$/;
+
+
 
 
         // Name validation
         if(nameError.value.trim() === "" || nameError.value === null){
             nameErrorMessage.innerHTML = "Name is required"
             return false;
+        }
+        else if(nameError.value.length <= 2){
+            nameErrorMessage.innerHTML = "Name is too short,enter atleast 3 characters"
         }
         else if(!nameRegex.test(nameError.value)){
             nameErrorMessage.innerHTML = "Should contains only alphabets"

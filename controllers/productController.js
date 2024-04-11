@@ -3,12 +3,14 @@ const Category = require("../models/categoryModel");
 const Products = require("../models/productModel")
 const fs = require("fs");
 const path = require("path");
+const sharp = require('sharp');
 
 
 const getAddProduct = async(req,res) => {
     try{
+        const errorMessage = req.query.error
         const category = await Category.find({isListed : true})
-        res.render("adminView/addProduct",{category : category})
+        res.render("adminView/addProduct",{category : category, errorMessage : errorMessage})
     }catch(error){
         res.status(500).send("Somthing went wrong")
         console.log("Error in add product page rendering",error.message);
@@ -20,19 +22,33 @@ const addProduct = async(req,res) => {
     try{
         const product = req.body;
         console.log(product);
-        const isProductExist = await Products.findOne({productName : product.name});
+
+        const category = await Category.findOne({name : product.category});
+        const nameSearch = new RegExp(product.productName,"i");
+        const isProductExist = await Products.findOne({productName : nameSearch});
         if(!isProductExist){
             const images = [];
             if(req.files && req.files.length > 0){
                 for(let i = 0; i < req.files.length; i++){
-                    images.push(req.files[i].filename);
+                    // images.push(req.files[i].filename);
+                    const file = req.files[i];
+                    const filename = Date.now() +"-"+ file.originalname
+
+                    await sharp(file.path)
+                    .resize(600, 600)
+                    .toFile(path.join(__dirname,'../public/uploads/product-images/',filename))
+
+                    images.push(filename)
                 }
             }
 
             const newProduct = new Products({
                 productName : product.productName,
                 description : product.description,
-                category : product.category,
+                category : {
+                    categoryId : category._id,
+                    name : product.category,
+                },
                 regularPrice : product.regularPrice,
                 salePrice : product.salePrice,
                 createdOn : new Date().toISOString(),
@@ -47,7 +63,7 @@ const addProduct = async(req,res) => {
         }
         else {
 
-            res.json("Product already exist");
+            res.redirect("/admin/addProduct?error=Product already exist");
         }
 
     }catch(error){
@@ -68,7 +84,7 @@ const getProduct = async(req,res) => {
        const skip = (page - 1) * limit;
 
        const productsData = await Products.find({productName : {$regex : `.*${searchTerm}.*` , $options : "i"}})
-       .sort({createdOn : -1}).limit(limit).skip(skip).exec();
+       .sort({createdAt : -1}).limit(limit).skip(skip).exec();
 
        const count = await Products.find({productName : {$regex : `.*${searchTerm}.*` , $options : "i"}})
        .countDocuments();
@@ -113,12 +129,13 @@ const unBlockProduct = async(req,res) => {
 const getEditProduct = async (req,res) => {
     try{
         const id = req.query.id;
+        const errorMessage = req.query.error
         const products = await Products.findOne({_id : id});
         console.log("get Product for edit product")
         const catergories = await Category.find({});
         
         console.log("Product page render successfully");
-        res.render("adminView/editProduct",{product : products , category : catergories})
+        res.render("adminView/editProduct",{product : products , category : catergories, errorMessage : errorMessage})
 
     }catch(error){
         res.status(500).send("Internal error",error.message)
@@ -150,16 +167,76 @@ const deleteImage = async   (req,res) => {
 }
 
 
-const updateProduct = async(req,res) => {
+
+
+const updateProduct = async (req, res) => {
     try{
         const productId = req.params.productId;
-        const {productName,description,category,regularPrice,salePrice,createdOn,quantity,size} = req.body;
+        const {productName,description,category,regularPrice,salePrice,quantity,size} = req.body;
         
+        const cat = await Category.findOne({name : category})
+        let productImage = [];
+        const newImage = req.files.map(file => file.filename);
 
-    }catch(error) {
+        const nameSearch = new RegExp(productName,"i");
+        const existingProduct = await Products.findOne({productName : nameSearch});
+
+        if(!existingProduct || existingProduct._id.toString() === productId){
+        if(req.files.length > 0){
+            const existProductId = await Products.findById(productId);
+
+            if(existProductId){
+                productImage = existProductId.productImage.concat(newImage);
+            }
+            await Products.findByIdAndUpdate(productId,{
+                productName : productName,
+                description : description,
+                category : {
+                    categoryId : cat._id,
+                    name : category
+                },
+                regularPrice : regularPrice,
+                salePrice : salePrice,
+                createdOn : new Date(),
+                quantity : quantity,
+                size : size,
+                productImage : productImage || newImage
+            },{new : true});
+
+            res.redirect("/admin/product");
+            // res.status(200).json({success : true, message : "Product updated successful"});
+            console.log("Product updated successfully");
+        }
+        else{
+             await Products.findByIdAndUpdate(productId,{
+                productName : productName,
+                description : description,
+                category : {
+                    categoryId : cat._id,
+                    name : category
+                },
+                regularPrice : regularPrice,
+                salePrice : salePrice,
+                createdOn : new Date(),
+                quantity : quantity,
+                size : size,
+            },{new : true});
+            res.redirect("/admin/product");
+            // res.status(200).json({success : true , message : "Product updated successful"});
+            console.log("Product updated without modifiying image array");
+        }
+   
+        }
+        else{
+            res.redirect(`/admin/editProduct?id=${productId}&error=Product already exist`)
+        }
+    }catch(error){ 
+        console.log("Error in update product :",error.message);
+        res.status(500).send("Internal server occur");
 
     }
-}
+};
+
 
 
 
@@ -171,6 +248,7 @@ module.exports = {
     blockProduct,
     unBlockProduct,
     getEditProduct,
-    deleteImage
+    deleteImage,
+    updateProduct
     
 }

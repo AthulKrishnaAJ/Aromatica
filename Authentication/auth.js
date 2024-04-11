@@ -1,22 +1,26 @@
 const User = require("../models/userModel");
 
 const isLogged = (req,res,next) => {
+
     if(req.session.user){
-        User.findById({id:req.session.user}).lean()
+         User.findById(req.session.user).lean()
         .then((data) => {
-            if(data.isBlocked === false){
+            if(data && data.isBlocked === false){
                 next()
             }
             else{
                 res.redirect("/login");
             }
+        }).catch((error) => {
+            console.log("Error in isLogged middleware",error.message);
+            res.redirect("/login");
         })
     }
     else{
         res.redirect("/login");
+        console.log("User has no session");
     }
 }
-
 
 
 

@@ -5,15 +5,21 @@ const productSchema = new mongoose.Schema({
     productName : {
         type : String,
         require : true
-
     },
     description : {
         type : String,
         require : true
     },
     category : {
-        type : String,
+        categoryId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Category",
         require : true
+        },
+        name : {
+            type : String,
+            require : true
+        }
     },
     regularPrice : {
         type : Number,
@@ -43,8 +49,7 @@ const productSchema = new mongoose.Schema({
         type : Number,
         require : true
     }
-
-});
+},{timestamps : true});
 
 const product = mongoose.model("Product",productSchema);
 

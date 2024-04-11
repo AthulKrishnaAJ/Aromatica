@@ -4,7 +4,8 @@ const Category = require("../models/categoryModel")
 const getCategory = async(req,res,error) => {
     try{
         const catergories = await Category.find({})
-        res.render("adminView/category",{category : catergories});      
+        const errorMessage = req.query.error
+        res.render("adminView/category",{category : catergories , errorMessage : errorMessage});      
 
     }catch(error){
         console.log("Category Page rendering error",error.message);
@@ -17,8 +18,9 @@ const getCategory = async(req,res,error) => {
 
 const addCategory = async(req,res) => {
     try{
-        const {name,description} = req.body
-        const existCategory = await Category.findOne({name});
+        const {name,description} = req.body   
+        const lowerCaseName = new RegExp(name,"i");
+        const existCategory = await Category.findOne({name : lowerCaseName});
         if(description){
             if(!existCategory){
                 const newCategory = new Category({
@@ -31,7 +33,7 @@ const addCategory = async(req,res) => {
             }
             else{
                 console.log("Category already exist");
-                res.redirect("/admin/category")
+                res.redirect("/admin/category?error=Category already exist")
             }
         }
         else{
@@ -97,7 +99,6 @@ const getEditCategory = async(req,res) => {
         const category = await Category.findOne({_id : id})
         res.render("adminView/editCategory",{category : category})
         console.log(category)
-        console.log("1");
     }catch(error){
         console.log("Get error in edit category page",error.message);
     }
@@ -108,8 +109,9 @@ const getEditCategory = async(req,res) => {
 const updateCategory = async(req,res) => {
     try{
         const id = req.params.id
+        console.log("cateogry Id for update category   => ",id);
         const {name,description} = req.body
-        const findCategory = await Category.find({_id : id})
+        const findCategory = await Category.findOne({_id : id})
         if(findCategory){
             await Category.updateOne(
                 {_id : id},

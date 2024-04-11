@@ -228,14 +228,17 @@
             <h2 class="content-title card-title">Category </h2>
             <p>Add, edit or delete a category</p>
         </div>
-        <div>
+        <!-- <div>
             <input type="text" placeholder="Search cat" class="form-control bg-white">
-        </div>
+        </div> -->
     </div>
     <div class="card">
         <div class="card-body">
             <div class="row">
                 <div class="col-md-3">
+                    <% if(locals.errorMessage){%>
+                        <p id="errorMessage". class="text-danger text-center"><%=locals.errorMessage%></p>
+                    <%}%>
                     <form method="post" action="/admin/addCategory" onsubmit="return validation()">
                         <div class="mb-4">
                             <label for="product_name" class="form-label">Name</label>
@@ -335,7 +338,8 @@ const descriptionErrorMessage = document.getElementById("descriptionErrorMessage
         const nameError = document.getElementById("product_name")
         const descriptionError = document.getElementById("descriptionError")
     
-        const nameRegex = /^[a-zA-Z]+$/; 
+        const nameRegex = /^[a-zA-Z]+(?: [a-zA-Z]+)*$/;
+
         const descriptionRegex = /^[\s\S]{10,}$/;
         const notNumberRegex = /^[^\d]*$/;
 
@@ -344,6 +348,10 @@ const descriptionErrorMessage = document.getElementById("descriptionErrorMessage
         if(nameError.value.trim() === "" || nameError.value === null){
             nameErrorMessage.innerHTML = "Name is required"
             return false;
+        }
+        else if(nameError.value.length <= 2){
+            nameErrorMessage.innerHTML = "Name is too short,Enter atleast 3 characters"
+            return false
         }
         else if(!nameRegex.test(nameError.value)){
             nameErrorMessage.innerHTML = "Should contains only alphabets"

@@ -189,11 +189,6 @@
 </header><!-- card-header end// -->
 
 
-
-
-
-
-
     <div class="right mt-5">
         <table class="table table-striped">
             <thead>
@@ -207,12 +202,12 @@
               </tr>
             </thead>
             <tbody>
-
+                <% if(productData && productData.length > 0){%>
                 <% productData.forEach(product => { %>
               
                     <tr>
                         <td class="text-center"><%= product.productName %></td>
-                        <td class="text-center"><%= product.category %></td>
+                        <td class="text-center"><%= product.category.name %></td>
                         <td class="text-center">₹<%= product.salePrice %></td>
                         <td class="text-center"><%= product.quantity %></td>
                         
@@ -237,10 +232,14 @@
                      </td>
                     </tr>
             <% }) %>
+            <%}else{%>
+                <h5 class="text-muted text-center">Products not available</h5>
+            <%}%>
             </tbody>
             
           </table>
     </div>
+   
 
         
        

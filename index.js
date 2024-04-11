@@ -21,7 +21,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/AromaticaDb");
 mongoose.connection.on("connected",() => {
     console.log("Connected to MongoDb");
 });
-mongoose.connection.on("erro",(err) => {
+mongoose.connection.on("error",(err) => {
     console.log(`Error connection to MongoDb ${err}`);
 });
 mongoose.connection.on("disconnected",() => {
@@ -31,7 +31,7 @@ mongoose.connection.on("disconnected",() => {
 
 
 const app = express();
-const Port = process.env.PORT || 1001
+const Port = process.env.PORT || 2012
 
 
 dotEnv.config()
@@ -56,15 +56,14 @@ app.use(express.static(path.join(__dirname,"public1")));
 
 
 app.use(session({
-    secret:uuid.v4(),
-    resave:false,
-    saveUninitialized:true,
-    cookie:{maxAge:600000,
-        httpOnly:true
-    }
-
-    
+    secret : uuid.v4(),
+    resave : false,
+    saveUninitialized : false,
+    cookie : {maxAge:600000}
+ 
 }));
+
+
 
 app.use("/",userRoute);
 app.use("/admin",adminRoute);
@@ -75,15 +74,3 @@ app.use("/admin",adminRoute);
 app.listen(Port,() => {
     console.log(`server runnig on http://localhost:${Port}`);
 })
-
-
-
-
-
-
-
-
-
-
-
-

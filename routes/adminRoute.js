@@ -1,15 +1,17 @@
 const express = require("express")
-
+const nocache = require('nocache')
 
 // files imported
-const {isAdmin} = require("../Authentication/auth")
-const adminController = require("../controllers/adminController")
-const categoryController = require("../controllers/categoryController")
-const productController = require("../controllers/productController")
-const customerController = require("../controllers/customerController")
-
+const {isAdmin} = require("../Authentication/auth");
+const adminController = require("../controllers/adminController");
+const categoryController = require("../controllers/categoryController");
+const productController = require("../controllers/productController");
+const customerController = require("../controllers/customerController");
+const orderController = require("../controllers/orderController");
+const couponController = require("../controllers/couponController")
 
 const route = express.Router()
+route.use(nocache());
 
 
 //multer setting
@@ -45,6 +47,8 @@ route.get("/editCategory",isAdmin,categoryController.getEditCategory);
 route.post("/editCategory/:id",isAdmin,categoryController.updateCategory);
 
 
+
+
 // Product mangement
 route.get("/addProduct",isAdmin,productController.getAddProduct);
 route.post("/addProduct",isAdmin,upload.array("images",3),productController.addProduct);
@@ -53,28 +57,33 @@ route.get("/blockProduct/:productId",isAdmin,productController.blockProduct);
 route.get("/unBlockProduct/:productId",isAdmin,productController.unBlockProduct);
 route.get("/editProduct",isAdmin,productController.getEditProduct);
 route.delete("/deleteImage/:productId/:filename",isAdmin,productController.deleteImage);
-route.post("/editProduct/:productId",isAdmin,upload.array("images",3),productController);
+route.post("/editProduct/:productId",isAdmin,upload.array("images",3),productController.updateProduct);
 
 
 
+//Order management
+route.get("/orderList",isAdmin,orderController.getOrderListPage);
+route.post("/cancelOrderByAdmin/:orderId",isAdmin,orderController.cancelOrderByAdmin);
+route.get("/orderDetails/:orderId",isAdmin,orderController.getOrderDetailsPage);
+route.post("/changeStatus",isAdmin,orderController.changeOrderStatus);
 
 
 
-
-
-
-
-module.exports = route
-
-
-
-
-
-
-
-
-
+// Coupon management
+route.get("/getCoupon",isAdmin,couponController.getCouponPage);
 
 
 
 module.exports = route
+
+
+
+
+
+
+
+
+
+
+
+

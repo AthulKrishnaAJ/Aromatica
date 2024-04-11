@@ -21,8 +21,15 @@
     <link rel="shortcut icon" type="image/x-icon" href="admin-assets/imgs/theme/favicon.svg">
     <!-- Template CSS -->
     <link href="/admin-assets/css/main.css" rel="stylesheet" type="text/css" />
-   <!-- Include SweetAlert CSS and JS files from CDN -->
+   <!-- Include SweetAlert CSS CDN -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css">
+
+<!-- Include Cropper.js CSS -->
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" integrity="sha512-hvNR0F/e2J7zPPfLC9auFe3/SE0yG4aJCOd/qxew74NN7eyiSKjr7xJJMu1Jy2wf7FXITpWS1E/RY8yzuXN7VA==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.css" integrity="sha512-bs9fAcCAeaDfA4A+NiShWR886eClUcBtqhipoY5DM60Y1V3BbVQlabthUBal5bq8Z8nnxxiyb1wfGX2n76N1Mw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<!-- <script src="/admin-assets/js/cropperjs/cropper.css"></script> -->
+<!-- <link rel="stylesheet" href="/admin-assets/js/cropperjs/cropper.css"> -->
 
 <style>
     .error-message{
@@ -189,6 +196,9 @@
         <div class="col-lg-6">
             <div class="card mb-4">
                 <div class="card-body">
+                    <% if(locals.errorMessage){%>
+                        <p class="text-danger text-center" id="productExistError"><%=locals.errorMessage%></p>
+                    <%}%>
 
                     <form method="post" action="/admin/addProduct" enctype="multipart/form-data">
                         <div class="mb-4">
@@ -265,14 +275,17 @@
 
                                 </div>
                             </div>
+                           
                             <div class="card-body">
                                 <div class="input-upload">
                                     <img src="assets/imgs/theme/upload.svg" alt="">
-                                    <input class="form-control border" name="images" id="imageInput" type="file"
-                                        multiple>
+                                    <input class="form-control border" name="images" id="imageInput" type="file" multiple>
                                 </div>
+                             
                             </div>
+                            
                         </div>
+                        
                         <div class="text-center">
                             <button class="btn btn-md rounded font-sm hover-up" type="submit">Publish</button>
                         </div>
@@ -282,6 +295,34 @@
         </div>
     </div>
 </section>
+
+
+<!-- <div class="modal" id="cropModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crop Images</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+              
+                <div id="selectedImages">
+                    
+                </div>
+
+               <div id="croppedImage">
+  
+               </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Crop</button>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+
 
 
 
@@ -297,10 +338,73 @@
         margin-right: 10px;
         /*Adjust margin as needed for spacing between thumbnails */
     }
+     
 </style>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<!-- Include Cropper.js library -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" integrity="sha512-9KkIqdfN7ipEW6B6k+Aq20PV31bjODg4AA52W+tYtAE0jE0kMx49bjJ3FgvS56wzmyfMUHbQ4Km2b7l9+Y/+Eg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.js" integrity="sha512-Zt7blzhYHCLHjU0c+e4ldn5kGAbwLKTSOTERgqSNyTB50wWSI21z0q6bn/dEIuqf6HiFzKJ6cfj2osRhklb4Og==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  
+<!-- <script src="/admin-assets/js/cropperjs/cropper.js"></script> -->
+
 <script>
+
+    setTimeout(() => {
+        document.getElementById('productExistError').style.display = "none"
+    },3000);
  
+
+    // $(document).ready(function () {
+    //         $('#imageInput').on('change', function (e) {
+    //             $('#selectedImages').empty();
+    //             let files = e.target.files;
+    //             $.each(files, function (i, file) {
+    //                 let reader = new FileReader();
+    //                 reader.onload = function (e) {
+    //                     let img = $('<img src="' + e.target.result + '" class="image-thumbnail">');
+    //                     $('#selectedImages').append(img)
+    //                     img.Cropper({
+    //                         aspectRatio: 1, 
+    //                         viewMode: 1, 
+    //                         autoCropArea: 1, 
+    //                         cropBoxResizable: false, 
+    //                         zoomable: true, 
+    //                         zoomOnWheel: true, 
+    //                         zoomOnTouch: true 
+    //                     })
+    //                 };
+    //                 reader.readAsDataURL(file);
+    //             });
+             
+    //             $('#cropModal').modal('show',function(){
+                    
+    //             });
+                
+    //         });
+    //     });
+
+    //     function cropAndPreview(){
+    //         $('#croppedImage').empty();
+    //         let image = document.getElementById('selectedImages').getElementsByTagName('img')[0];
+    //         let cropper = new Cropper(image,{
+    //             aspectRation : 1 / 1,
+    //             viewMode : 2,
+    //             crop : function(){
+    //                 let croppedImage = cropper.getCroppedCanvas().toDataURL();
+    //                 $('#croppedImage').append('<img src="'+croppedImage+'" class="cropped-thumbnail">');
+    //                 addImageContainer(croppedImage)
+    //             }
+    //         })
+    //     }
+
+      
+    //     function addImageContainer(){
+
+    //     }
+
 
     const selectImages = [];
 
@@ -363,11 +467,32 @@
             selectImages.splice(index , 1);
         }
 
-        thumbnail.remove()
+        thumbnail.remove();
 
     }
 
-   
+    
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
 
 // vaidate form
 
@@ -375,7 +500,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form');
 
     form.addEventListener('submit', function (event) {
-        // Prevent the form from submitting
         event.preventDefault();
 
         // Validate each input field
@@ -386,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const quantity = document.querySelector('input[name="quantity"]').value.trim();
         const size = document.querySelector('input[name="size"]').value.trim();
 
-        const nameRegex = /^[a-zA-Z]+$/ ;
+        const nameRegex = /^[a-zA-Z]+(?: [a-zA-Z]+)*$/;
 
         // Validate product name
         if (productName === '') {
@@ -403,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (description === '') {
             showError('description', 'Description is required');
         }
-        else if(description.length < 10){
+        else if(description.length <= 9){
             showError('description','Atleast enter 10 letters');
         }      
         else {
@@ -513,9 +637,79 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+// const selectImages = [];
+
+//     document.getElementById("imageInput").addEventListener("change",handleFileSelecion);
+
+//     function handleFileSelecion(event){
+
+//         const addImagesContainer = document.getElementById('addedImagesContainer')
+
+//         addImagesContainer.innerHTML = ""
+
+//         // Get the selected files
+//         const files = event.target.files
+
+//         for(let i = 0; i < files.length; i++){
+
+//             const file = files[i];
+
+//             selectImages.push(file);
+
+//             const thumbnail = createThumbnail(file)
+
+//             addImagesContainer.appendChild(thumbnail)
+//         }
+//     }
+
+//     function createThumbnail(file){
+
+//         // Create thumbnail element
+//         const thumbnail = document.createElement("div");
+//         thumbnail.classList.add("thumbnail");
+
+//         // Create image element
+//         const img = document.createElement("img");
+//         img.src = URL.createObjectURL(file);
+//         img.alt = "thumbnail";
+
+
+//         img.style.width = "50px";
+//         img.style.height = "auto";
+
+
+//         // Create remove icon
+//         const removeIcon = document.createElement("span");
+//         removeIcon.classList.add("remove-icon")
+//         removeIcon.innerHTML = "&times;";
+
+//         removeIcon.addEventListener("click",() => removeThumbnail(file,thumbnail))
+
+//         thumbnail.appendChild(img);
+//         thumbnail.appendChild(removeIcon)
+
+//         return thumbnail;
+//     }
+
+//     function removeThumbnail(file,thumbnail){
+
+//         const index = selectImages.indexOf(file)
+//         if(index !== -1){
+//             selectImages.splice(index , 1);
+//         }
+
+//         thumbnail.remove();
+
+//     }
+
+    
+
+
+
     </script>
 
 </main>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="admin-assets/js/vendors/jquery-3.6.0.min.js"></script>
 <script src="admin-assets/js/vendors/bootstrap.bundle.min.js"></script>
 <script src="admin-assets/js/vendors/select2.min.js"></script>

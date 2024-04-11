@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const sendOtpByEmail = async(email,otp) => {
    
     try{
-        console.log("1");
+        // console.log("1");
         const transporter = nodeMailer.createTransport({
             service:"gmail",
             port:587,
@@ -24,9 +24,9 @@ const sendOtpByEmail = async(email,otp) => {
             html:`<b> your OTP is ${otp}</b>`
     
         }
-       console.log("2")
+    //    console.log("2")
        const info =  await transporter.sendMail(mailOptions);
-        console.log("3")
+        // console.log("3")
         if(info){
             console.log("Otp send by email successfully",info.messageId);
         }
