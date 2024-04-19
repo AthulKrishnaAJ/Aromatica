@@ -71,7 +71,9 @@ route.post("/changeStatus",isAdmin,orderController.changeOrderStatus);
 
 // Coupon management
 route.get("/getCoupon",isAdmin,couponController.getCouponPage);
-
+route.post("/addCoupon",isAdmin,couponController.addingCoupon);
+route.put("/changeCouponStatus/:couponId",isAdmin,couponController.changeCouponStatus);
+route.post("/deleteCoupon/:couponId",isAdmin,couponController.deleteCoupon);
 
 
 module.exports = route

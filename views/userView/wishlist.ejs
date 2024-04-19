@@ -624,9 +624,9 @@
                     if(res.status === false && res.message === "Out of stock"){
 
                         Swal.fire({
-                        title: "Out of stock",
-                        text:  "Failed to add cart",
-                        icon: "error",
+                        title: "Warning!",
+                        text:  "Quantity limit reached!",
+                        icon: "warning",
                         showConfirmButton: true
                     });
                 }

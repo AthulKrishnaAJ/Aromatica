@@ -25,6 +25,14 @@
 	<!-- Bootstrap CSS
 		============================================ -->
 	<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+
+		<!-- 
+    Toastify css link
+    ============================= -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+
+
     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> -->
 	<!-- Font Awesome CSS
 		============================================ -->
@@ -337,7 +345,7 @@
                                 </thead>
                                 <tbody>
 									<% if(!cart || !cart.items || cart.items.length === 0 ){ %> 
-										<h4 class=" text-muted text-center">Cart is empty</h4>
+										<h4 class=" text-muted text-center" id="cartEmptyMessage">Cart is empty</h4>
 									<%}else{%>
 									 
                                     <% cart.items.forEach((item , index) => { %>
@@ -350,7 +358,7 @@
                                             <h2><a href="#"><%=item.product.productName%></a></h2>
                                         </td>
                                         <!-- <td class="th-edit"><a href="#">Edit</a></td> -->
-                                        <td class="th-price" id="unitPrice<%=index%>">$<%=item.product.salePrice%></td>
+                                        <td class="th-price" id="unitPrice<%=index%>">Rs.<%=item.product.salePrice%></td>
                                         
                                         <td class="th-qty">
                                             <div class="quantity">
@@ -370,7 +378,7 @@
                                             </div>
                                                               
                                         </td>
-                                        <td class="th-total subTotal" id="subTotal<%=index%>">$<%=item.price%></td>
+                                        <td class="th-total subTotal" id="subTotal<%=index%>">Rs.<%=item.price%></td>
                                     </tr>
 
                                     <% }) %>
@@ -383,16 +391,25 @@
                             </table>
                         </div><!-- End Cart Item -->
                         <div class="shoping-cart-button">
-                            <div class="cart-button-left">
+                            <!-- <div class="cart-button-left">
                             <a href="/"><button type="button" class="btn">Continue Shopping</button></a>
-                            </div>
+                            </div> -->
                             <div class="cart-button-right">
-                                <button type="button" class="btn">Update Shopping Cart</button>
+                                <!-- <button type="button" class="btn">Update Shopping Cart</button> -->
+								<a href="/"><button type="button" class="btn">Continue Shopping</button></a>
                                 <button type="button" class="btn">Clear Shopping Cart</button>
                             </div>
                         </div>
                     </div>
                 </div>
+
+				
+
+
+
+
+
+
 
 				<div class="cart-shopping-area fix">
 					<!-- Cart Shoping Area -->
@@ -416,10 +433,17 @@
 							<div class="chart-all fix">
 								<h2>Discount Codes</h2>
 								<p>Enter your coupon code if you have one.</p>
-								<input type="text">
+								<form id="couponForm">
+								<span id="couponErrorMessage" class="text-danger"></span>
+								<input type="text" id="couponInput" placeholder="Coupon code">
+
+								<input type="hidden" id="couponDiscount">
+								
 								<div class="shiping-cart-button">
-									<button type="button" class="btn">Apply Coupon</button>
-								</div>
+									<button type="submit" class="btn" id="applyCouponButton">Apply Coupon</button>
+									<button type="button" class="btn" id="removeCouponButton">Remove Coupon</button>
+								</div> 
+							</form>
 							</div>
 						</div>
 						<div class="col-lg-4 col-sm-12">
@@ -428,7 +452,7 @@
 									<div class="shopping-cost">
 										<div class="shopping-cost-right">
 											<!-- <p id="subTotal"></p> -->
-											<p><b id="grandTotal">$<%=cart.totalCost%></b></p>
+											<p><b id="grandTotal">Rs.<%=cart.totalCost%></b></p>
 										</div>
 										<div class="shopping-cost-left">
 											<!-- <p class="floatright">Sub Total </p> -->
@@ -616,6 +640,146 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
 <script>
+
+
+	$(document).ready(function(){
+
+		const discountFromStorage = localStorage.getItem('couponDiscount');
+			if(discountFromStorage){
+				$('#couponDiscount').val(discountFromStorage);
+			}
+		
+        $('#couponForm').submit(function(event){
+            event.preventDefault();
+
+            let couponCode = $('#couponInput').val().trim();
+
+			// validation
+			if(couponCode === '' || couponCode === null){
+				$('#couponErrorMessage').text('Field is require');
+				return false;
+			}
+			else{
+				$('#couponErrorMessage').text('');
+
+			}
+
+		let cartEmptyMessage = $('#cartEmptyMessage').text();
+			if(cartEmptyMessage === 'Cart is empty'){
+				Toastify({
+					text : 'Cart is empty cannot apply coupon',
+					duration : 2000,
+					close : true,
+					gravity : 'top',
+					position : 'right',
+					backgroundColor : '#dc3545'
+				}).showToast();
+				return false;
+			}
+
+            $.ajax({
+                url : '/applyCoupon',
+                method : 'post',
+                data : {couponCode : couponCode},
+                success : (response) => {
+                    if(response.success){
+						const discount = response.coupon.discount
+						const couponApplied = response.userCart.couponApplied
+						
+						couponAppliedGrandTotal(discount);
+						localStorage.setItem('couponDiscount', discount)
+						
+                        Toastify({
+                            text : response.message,
+                            duration : 2000,
+                            gravity : 'top',
+                            position : 'right',
+                            backgroundColor : '#28a745'
+                        }).showToast();
+						
+                    }
+                    else{
+						
+                        Toastify({
+                            text : response.message,
+                            duration : 2000,
+                            gravity : 'top',
+                            position : 'right',
+                            backgroundColor : '#dc3545'
+                        }).showToast();
+                    }
+
+                },
+                error : (error) => {
+                    console.error("Error in ajaxxx :",error);
+                }
+            })
+        })
+
+
+
+		$('#removeCouponButton').click(function(event){
+			event.preventDefault();
+			
+			let couponCode = $('#couponInput').val().trim();
+
+			// validation
+			if(couponCode === '' || couponCode === null){
+				$('#couponErrorMessage').text('Field is require');
+				return false;
+			}
+			else{
+				$('#couponErrorMessage').text('');
+
+			}
+			$.ajax({
+				url : '/removeCoupon',
+				method : 'post',
+				success : (response) => {
+					if(response.success){
+					
+					const totalCost = parseFloat(response.userCart.totalCost);
+					$('#grandTotal').text(`Rs.${totalCost}`);
+						
+					Toastify({
+                            text : response.message,
+                            duration : 2000,
+                            gravity : 'top',
+                            position : 'right',
+                            backgroundColor : '#dc3545'
+                        }).showToast();
+
+					}
+					else{
+						
+						Toastify({
+                            text : response.message,
+                            duration : 2000,
+                            gravity : 'top',
+                            position : 'right',
+                            backgroundColor : '#dc3545'
+                        }).showToast();
+					}
+
+					
+				}
+			})
+		})
+    })
+
+	function couponAppliedGrandTotal(discount){
+
+		let grandTotal = parseFloat($('#grandTotal').text().replace('Rs.',''));
+		const newGrandTotal = grandTotal - parseFloat(discount);
+		$('#grandTotal').text(`Rs.${newGrandTotal}`);
+		$('#couponDiscount').val(discount);
+		
+	}
+
+
+
+
+
 	function updateQuantity(productId,quantity,index){
 		$.ajax({
 			url : "/updateCart",
@@ -624,28 +788,28 @@
 			success : (response) => {
 				if(response.status === true){
 					console.log("Cart updated successfully");
-					const inputField = $(`#quantityInput${index}`);
-					const currentQuantity = parseInt(inputField.val());
-					const newQuantity = currentQuantity + parseInt(quantity);
-					inputField.val(newQuantity);
+					// const inputField = $(`#quantityInput${index}`);
+					// const currentQuantity = parseInt(inputField.val());
+					// const newQuantity = currentQuantity + parseInt(quantity);
+					// inputField.val(newQuantity);
+					response.cart.items.forEach((item, index) => {
+						let quantity = parseFloat(item.quantity)
+						let subTotal = parseFloat(item.price);
+						$(`#quantityInput${index}`).val(quantity);
+						$(`#subTotal${index}`).text(`Rs.${subTotal}`);
+					})
+
+					let totalCost = parseFloat(response.cart.totalCost);
+					$('#grandTotal').text(`Rs.${totalCost}`);
 					
 					// update subtotal and grand total
-					const unitPrice = parseFloat($(`#unitPrice${index}`).text().replace('$',''));
-					const newSubtotal = newQuantity * unitPrice;
-					$(`#subTotal${index}`).text(`$${newSubtotal}`);
-
-					updateGrandTotal();
-
-					// if the quantity is 1 disabled the decrease button
-					// const decreaseButton = $(`#decreaseButton${index}`);
-					// if(newQuantity === 1){
-						// decreaseButton.prop('disabled',true);
-						// decreaseButton.hide()
-					// }
-					// else{
-						// decreaseButton.prop('disabled',false);
-					// 	decreaseButton.show()
-					// }
+					// const unitPrice = parseFloat($(`#unitPrice${index}`).text().replace('Rs.',''));
+					// const items = parseFloat(response.cart.items);
+					// const unitPrice = items.map(item => item.unitPrice);
+					// alert(unitPrice)
+					// const newSubtotal = newQuantity * unitPrice;
+					// $(`#subTotal${index}`).text(`Rs.${newSubtotal}`);
+	
 					
 				}
 				else{
@@ -669,18 +833,15 @@
 		});
 	}
 
-	function updateGrandTotal(){
-		let grandTotal = 0;
-		$(".subTotal").each(function(){
-			grandTotal = grandTotal + parseFloat($(this).text().replace('$',''));
-		});
-		$("#grandTotal").text(`$${grandTotal}`)
-	}
+	
+	
+	
 </script>
 
 <script>
 	function removeProduct(productId,event){
 		event.preventDefault();
+		let discountPrice = parseFloat($('#couponDiscount').val()) || 0
 
 		Swal.fire({
 			title : "Are You Sure..?",
@@ -692,19 +853,20 @@
             confirmButtonText: 'Yes, remove it!'
 		}).then((result) => {
 			if(result.isConfirmed){
-				confirmRemoveProduct(productId);
+				confirmRemoveProduct(productId,discountPrice);
 			}
 		})
 	}
 
-	function confirmRemoveProduct(productId){
+	function confirmRemoveProduct(productId,discountPrice){
 		$.ajax({
 			url : "/removeProduct",
 			method : "post",
-			data : {productId},
+			data : {productId,discountPrice},
 			success : (response) => {
 				if(response.status === true){
 					console.log("Product removed successfully");
+					localStorage.setItem('couponDiscount', 0);
 					Swal.fire({
 						title : "Success!",
 						text : "Product has been removed from the cart",
@@ -743,7 +905,8 @@
    
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
+    <!-- Toastify js -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 <!-- Bootstrap JS -->
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

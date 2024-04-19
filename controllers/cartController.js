@@ -1,19 +1,44 @@
 const Products = require("../models/productModel");
 const User = require("../models/userModel");
 const Cart = require("../models/cartModel");
+const Coupon = require("../models/couponModel");
+// const { default: items } = require("razorpay/dist/types/items");
+
 
 
 // User get the cart page
 const getCart = async(req,res) => {
     try{
         const userId = req.session.user
-
+        const couponDetails = await Coupon.find({isActive : true});
         const cart = await Cart.findOne({user : userId}).populate('items.product');
+
+        const productId = cart.items.map(item => item.product._id);
+        const products = await Products.find({_id : {$in : productId}})
+
+
+        cart.items.forEach((item) => {
+            const product = products.find(pro => pro._id.equals(item.product._id))
+            item.price = product.salePrice * item.quantity
+        });
+        
+        let totalQuantity = 0;
+        let totalCost = 0;
+        cart.items.forEach((item) => {
+            totalQuantity += item.quantity
+            totalCost += item.price
+        });
+
+        cart.totalQuantity = totalQuantity
+        cart.totalCost = totalCost
+        
+        await cart.save();
+
         if(!cart){
-            res.render("userView/cart",{cart : "Cart is empty" , user : userId});
+            res.render("userView/cart",{cart : "Cart is empty" , user : userId, couponDetails : couponDetails});
         }
         else{
-            res.render("userView/cart",{cart : cart , user : userId});
+            res.render("userView/cart",{cart : cart , user : userId, couponDetails : couponDetails});
         }
 
     }catch(error){
@@ -53,7 +78,8 @@ const addToCart = async(req,res) => {
 
         if(existingItem){
             existingItem.quantity += parseInt(quantity)
-            existingItem.price += product.salePrice * parseInt(quantity)
+            existingItem.price += product.salePrice *  parseInt(quantity)
+           
         }
         else{
             cart.items.push({
@@ -123,7 +149,7 @@ const changeProductQuantity = async(req,res) => {
 
         await cart.save()
 
-        res.json({status : true});
+        res.json({status : true, cart : cart});
     }catch(error){
         console.log("Error updating cart : ", error.message);
         res.status(500).json({status : false , message : "Internal server error..!"});
@@ -136,6 +162,7 @@ const changeProductQuantity = async(req,res) => {
 const removeProduct = async(req,res) => {
     try{
         const productId = req.body.productId
+        const discountPrice = parseFloat(req.body.discountPrice);
         const userId = req.session.user
         console.log(`Product id is   => ${productId}`);
 
@@ -153,16 +180,25 @@ const removeProduct = async(req,res) => {
 
         const result = await Cart.updateOne(
             {user : userId},
-            {$pull : {items : {product : productId}}}
+            {$pull : {items : {product : productId}}},
+            
         );
+
 
         if(result){
 
             cart.totalQuantity = cart.totalQuantity - removedItem.quantity
             cart.totalCost = cart.totalCost - removedItem.price
 
+
+            if(discountPrice !== ''){
+                cart.totalCost = cart.totalCost + discountPrice
+                cart.appliedCoupon = null
+                console.log("Enter handle discount price when user remove the product...");
+            }
+
             await cart.save();
-            res.json({status : true});
+            res.json({status : true, cart : cart, discountPrice : discountPrice});
         }
         else{
             res.json({status : false , message : "Product not found in the cart"});

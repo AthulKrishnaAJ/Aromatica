@@ -30,11 +30,10 @@ mongoose.connection.on("disconnected",() => {
 
 
 
+dotEnv.config()
+
 const app = express();
 const Port = process.env.PORT || 2012
-
-
-dotEnv.config()
 
 
 //Set view engine

@@ -1,7 +1,7 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 
-
+// get dashboard
 const getDashBoard = (req,res) => {
     try{
         res.render("adminView/dashBoard");
@@ -12,6 +12,7 @@ const getDashBoard = (req,res) => {
 }
 
 
+// get admin login
 const getAdminLogin = (req,res) => {
     try{
         res.render("adminView/adminLogin")

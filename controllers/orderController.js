@@ -4,7 +4,18 @@ const Cart = require("../models/cartModel");
 const Address = require("../models/addressModel");
 const mongoose = require("mongoose");
 const Order = require("../models/orderModel");
-// const ObjectId = require('mongoose').Types.ObjectId
+const Coupon = require("../models/couponModel")
+const Razorpay = require("razorpay");
+require('dotenv').config();
+
+
+const razorpay = new Razorpay({
+    key_id : process.env.RAZORPAY_KEY_ID,
+    key_secret : process.env.RAZORPAY_KEY_SECRET
+});
+
+const keyId = process.env.RAZORPAY_KEY_ID
+const keySecret = process.env.RAZORPAY_KEY_SECRET
 
 
 // Get check Out page
@@ -13,46 +24,23 @@ const Order = require("../models/orderModel");
             const userId = req.session.user
         
             const allAddresses  = await Address.findOne({user : userId});
-
-            const userCart = await Cart.findOne({user : userId});
-
-            // console.log("user cart issssss  =>",userCart);
-            if(!userCart){
-                console.log("Cart not found for the user");
-                res.status(404).send("Cart not founded for the user")
-            }
-            
-                const cartDetails = await Cart.aggregate([
-
-                    {$match : {user : new mongoose.Types.ObjectId(userId)}},
-                    {$unwind : "$items"},
-                    {
-                        $lookup : {
-                            from : "products",
-                            localField : "items.product",
-                            foreignField : "_id",
-                            as : "product"
-                        }
-                    },
-                    {$unwind : "$product"},
-                    {
-                        $group : {
-                            _id : "$_id",
-                            items : {
-                                $push : {
-                                    productName : "$product.productName",
-                                    quantity : "$items.quantity",
-                                    totalPrice : "$items.price",
-                                }
-                            },
-                            totalCost : {$sum : "$items.price"}
-                        }
-                    }
-                   
-                ])
-                console.log("cart details isssss   =>",cartDetails);
     
-            res.render("userView/checkOut",{allAddresses : allAddresses, user : userId, cartDetails : cartDetails});
+
+                const cartDetails = await Cart.findOne(({user : userId})).populate("items.product");
+                
+               if(!cartDetails){
+                console.log("Cart not found for the user");
+                res.status(404).render('userView/fileNotFound');
+            }
+            const totalCost = parseInt(cartDetails.totalCost);
+            console.log("Total cost isssss ====> ",totalCost);
+
+            const couponDetails = await Coupon.find({isActive : true, minimumPrice : {$lte : totalCost}})
+
+
+            console.log("cart details isssss   =>",cartDetails);
+    
+            res.render("userView/checkOut",{allAddresses : allAddresses, user : userId, cartDetails : cartDetails, couponDetails : couponDetails});
             console.log("Check out page rendering successfully");
     
 
@@ -180,7 +168,96 @@ const checkOutUpdateAddress  = async(req,res) => {
         res.status(500).send("Internal server error occur");
     }
 }
+
+// razorpay initialization
+const razorpayInitialization = async(req,res) => {
+    try{
+
+        const userId = req.session.user
+
+        const user = await User.findById(userId);
+        const userCart = await Cart.findOne({user : userId}).populate('items.product');
+
+        
+      let razorpayOrder = await razorpay.orders.create({
+            amount : userCart.totalCost * 100,
+            currency : 'INR',
+            receipt : userCart._id.toString(),
+            payment_capture : 1
+        });
+
+        res.json({success : true, user : user, razorpayOrder : razorpayOrder, keyId : keyId});
+
+    }catch(error){
+        console.log("Error in intializing razorpay :",error.message);
+        res.status(500).send("Internal server error");
+    }
+}
+
+
+
+
+
+// handle razorpay failure
+const handleRazorpayFailure = async(req,res) => {
+    try{
+        const userId = req.session.user
+        const {selectedAddressId, paymentMethod} = req.body
+
+        const selectAddress = await Address.findOne({user : userId});
+        const addressDetails = selectAddress.addresses.find(address => address._id.equals(selectedAddressId));
+        const userCart = await Cart.findOne({user : userId}).populate("items.product");
+        
+
+        if(paymentMethod === "razorpay"){
+
+            let saveOrder = new Order({
+                user : userId,
+                items : userCart.items.map(item => ({
+                    productId : item.product,
+                    quantity : item.quantity,
+                    price : item.price
+                })),
+                totalCost : userCart.totalCost,
+                address: {
+                    addressId: addressDetails._id,
+                    addressType: addressDetails.addressType,
+                    name: addressDetails.name,
+                    addressLine: addressDetails.addressLine,
+                    city: addressDetails.city,
+                    state: addressDetails.state,
+                    pincode: addressDetails.pincode,
+                    phone: addressDetails.phone,
+                    altPhone: addressDetails.altPhone
+                },
+                paymentMethod : paymentMethod,
+                status : 'failure'
+
+            });
+            let newOrder = await saveOrder.save();
+            console.log("Order saved with failure status");
+        
+
+        await Promise.all(userCart.items.map(async(item) => {
+            const product = item.product
+            const updateQuantity = product.quantity - item.quantity
+            await Products.findByIdAndUpdate(product._id,{quantity : updateQuantity});
+        }));
+       await Cart.findByIdAndUpdate(userCart._id,{items : [], totalQuantity : 0, totalCost : 0, appliedCoupon : null});
+       return res.json({success : true, orderId : newOrder._id});
+    }
+    else{
+        res.json({success : false})
+    }
+    }catch(error){
+        console.log("error in hanlding razorpay failure :",error.message);
+        res.stats(500).send("Internal server error");
+    }
+}
     
+
+
+
 
 // Place order by user
 const placeOrder = async(req,res) => {
@@ -188,6 +265,8 @@ const placeOrder = async(req,res) => {
         const userId = req.session.user
         const {selectAddressId, paymentMethod} = req.body
         console.log("selectedAddressssssss   => :",selectAddressId);
+
+        const user = await User.findById(userId)
       
         if(!selectAddressId){
             return res.status(400).send("ERROR!.to select an address for placing order");
@@ -196,22 +275,27 @@ const placeOrder = async(req,res) => {
             return res.status(400).send("ERROR!.to select payment method for placing order");
         }
         const selectedAddress = await Address.findOne({user : userId})
-        // console.log("Select user address==========> : ",selectedAddress);
+
 
         const addressDetails = selectedAddress.addresses.find(address => address._id.equals(selectAddressId))
         console.log("Select address====================> : ",addressDetails);
 
         if(!addressDetails){
-            return res.status(404).send("Selected address not found");
+            return res.json({success : false});
         }
 
         const userCart = await Cart.findOne({user : userId}).populate("items.product");
-        console.log("user cart ============>",userCart);
+        
 
         if(!userCart){
-            return res.status(404).send("Cart not found for the user");
+            return res.json({success : false});
         }
-        const newOrder = new Order({
+        let saveOrder;
+       
+
+        if(paymentMethod === 'cash-on-delivery'){
+
+            saveOrder = new Order({
             user : userId,
             items : userCart.items.map(item =>({
                 productId : item.product,
@@ -232,15 +316,43 @@ const placeOrder = async(req,res) => {
             },
             paymentMethod : paymentMethod
         });
-         const saveOrder = await newOrder.save();
-        console.log("Order saved")
+        saveOrder = await saveOrder.save();
+    }
+    else if(paymentMethod === 'razorpay'){
+
+        saveOrder = new Order({
+            user : userId,
+            items : userCart.items.map(item =>({
+                productId : item.product,
+                quantity : item.quantity,
+                price : item.price
+            })),
+            totalCost :userCart.totalCost,
+            address: {
+                addressId: addressDetails._id,
+                addressType: addressDetails.addressType,
+                name: addressDetails.name,
+                addressLine: addressDetails.addressLine,
+                city: addressDetails.city,
+                state: addressDetails.state,
+                pincode: addressDetails.pincode,
+                phone: addressDetails.phone,
+                altPhone: addressDetails.altPhone
+            },
+            paymentMethod : paymentMethod
+        });
+        saveOrder = await saveOrder.save();
+
+    }
+        console.log("Order Placed");
+
         await Promise.all(userCart.items.map(async(item) => {
             const product = item.product
             const updateQuantity = product.quantity - item.quantity
             await Products.findByIdAndUpdate(product._id,{quantity : updateQuantity});
         }));
 
-        await Cart.findByIdAndUpdate(userCart._id,{items : [], totalQuantity : 0, totalCost : 0});
+        await Cart.findByIdAndUpdate(userCart._id,{items : [], totalQuantity : 0, totalCost : 0, appliedCoupon : null});
 
         res.status(200).json({success : true, orderId : saveOrder._id});
         
@@ -250,6 +362,9 @@ const placeOrder = async(req,res) => {
         res.status(500).send("Internal server error occur");
     }
 }
+
+
+
 
 
 // get order list page by admin
@@ -273,6 +388,8 @@ const getOrderListPage = async(req,res) => {
         res.status(500).send("Intrenal server error")
     }
 }
+
+
 
 
 // delete order by admin
@@ -303,6 +420,9 @@ const cancelOrderByAdmin = async(req,res) => {
 
 
 
+
+
+
 // get order details page in the admin side
 const getOrderDetailsPage = async (req, res) => {
     try {
@@ -319,6 +439,9 @@ const getOrderDetailsPage = async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 };
+
+
+
 
 
 // change the order status
@@ -348,6 +471,9 @@ const changeOrderStatus = async(req,res) => {
 }
 
 
+
+
+
 // get order details in the user side
 const userOrderDetailsPage = async(req,res) => {
     try{
@@ -360,6 +486,8 @@ const userOrderDetailsPage = async(req,res) => {
         res.status(500).send("Internal server error occcur");
     }
 }
+
+
 
 
 const cancelOrderByUser = async(req,res) => {
@@ -398,6 +526,7 @@ const cancelOrderByUser = async(req,res) => {
 
 
 
+
 const returnedOrderByUser = async(req,res) => {
     try{
         const userId = req.session.user
@@ -428,6 +557,7 @@ const returnedOrderByUser = async(req,res) => {
 
 
 
+
 const getOrderSuccessPage = async(req,res) => {
     try{
         const orderId = req.query.orderId
@@ -448,6 +578,8 @@ module.exports = {
     checkOutAddAddress,
     getCheckOutEditAddress,
     checkOutUpdateAddress,
+    razorpayInitialization,
+    handleRazorpayFailure,
     placeOrder,
     getOrderListPage,
     getOrderDetailsPage,

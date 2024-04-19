@@ -20,7 +20,6 @@ const { query } = require("express");
 const category = require("../models/categoryModel");
 const product = require("../models/productModel");
 
-
 //Load home Page
 const loadHomePage = async(req,res) => {
     try{
@@ -982,7 +981,7 @@ const insertEmailInEmailverfication = async(req,res) => {
                 pass : process.env.EMAIL_PASSWORD
             }
         });
-
+console.log(process.env.EMAIL_USER,"process.env.EMAIL_USERmmm");
         const mailOptions = {
             from : process.env.EMAIL_USER,
             to : email,

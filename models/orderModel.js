@@ -68,12 +68,12 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod : {
         type : String,
-        enum : ["cash-on-delivery", "credit-card","paypal","razorpay"],
+        enum : ["cash-on-delivery", "credit-card","paypal","razorpay","wallet"],
         required : true
     },
     status : {
         type : String,
-        enum : ["pending", "processing", "shipped", "delivered","cancelled","return pending","returned"],
+        enum : ["pending", "processing", "shipped", "delivered","cancelled","return pending","returned","failure","payment pending"],
         default : "pending"
     },
     cancellationReason : {

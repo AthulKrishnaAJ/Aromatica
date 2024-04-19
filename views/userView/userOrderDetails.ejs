@@ -397,10 +397,10 @@
                                             </a>
                                         </td>
                                     
-                                        <td class="text-center" style="vertical-align: middle; font-size: 12px;"> ₹<%=item.productId.salePrice%>.00</td>
+                                        <td class="text-center" style="vertical-align: middle; font-size: 12px;"> Rs.<%=item.productId.salePrice%>.00</td>
                                         
                                         <td class="text-center" style="vertical-align: middle; font-size: 12px;"><%=item.quantity%></td>
-                                        <td class="text-end text-center" style="vertical-align: middle; font-size: 12px;"> ₹<%=item.price%>.00 </td>
+                                        <td class="text-end text-center" style="vertical-align: middle; font-size: 12px;"> Rs.<%=item.price%>.00 </td>
                                     </tr>
                                     <%})%>
                                 <tr>
@@ -408,7 +408,7 @@
                                         <article class="float-end">
                                             <div class="order-summary">
                                                 <div class="order-summary-row">
-                                                    <div class="order-summary-label fs-5">Grand total : ₹<%=order.totalCost%>.00</div>
+                                                    <div class="order-summary-label fs-5">Grand total : Rs.<%=order.totalCost%>.00</div>
                                                     <div class="order-summary-value fs-5"></div>
                                                 </div>
                                                 <div class="order-summary-row">
@@ -722,7 +722,7 @@
                         text: response.message,
                         duration: 3000,
                         close: true,
-                        backgroundColor: "",
+                        backgroundColor: "#28a745",
                         style: {
                         fontSize: "12px" ,
                        
