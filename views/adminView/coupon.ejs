@@ -101,13 +101,13 @@
                
                
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/brands"> <i class="icon material-icons md-stars"></i>
-                        <span class="text">Brands</span> </a>
+                    <a class="menu-link" href="/admin/getOffer"> <i class="icon material-icons md-stars"></i>
+                        <span class="text">Add offer</span> </a>
                 </li>
 
 
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/coupon"> <i class="icon material-icons md-class"></i>
+                    <a class="menu-link" href="/admin/getCoupon"> <i class="icon material-icons md-class"></i>
                         <span class="text">Coupon</span> </a>
                 </li>
 
@@ -117,7 +117,7 @@
                 </li>
 
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/salesReport"> <i class="icon material-icons md-description"></i>
+                    <a class="menu-link" href="/admin/getSalesReport"> <i class="icon material-icons md-description"></i>
                         <span class="text">Sales Report</span> </a>
                 </li>
              
@@ -250,7 +250,7 @@
                                             <%= couponDetails[i].discount%>
                                         </td>
                                         <td width="15%">
-                                          <%= couponDetails[i].expiryDate%>
+                                          <%= couponDetails[i].expiryDate.toLocaleDateString()%>
                                         </td>
                                         <!-- <td width="10%"><a onclick=""
                                                 class="btn btn-sm btn-info rounded font-sm mt-15">Edit</a></td> -->
@@ -605,8 +605,8 @@
                     $('#discountError').text('Should contain positive digits');
                     isValid = false
                 }
-                else if(discount > minimumPrice){
-                    $('#discountError').text('Discount must less than minimum price ');
+                else if(discount >= minimumPrice){
+                    $('#discountError').text('Discount must be less than minimum price ');
                     isValid = false
                 }
                 else{

@@ -46,7 +46,10 @@ const couponSchema = new mongoose.Schema({
 
 couponSchema.pre('save',function(next){
     if(this.expiryDate && this.expiryDate < new Date() && this.isValid !== 'Expired'){
-        this.isValid = 'Expired';
+        this.isValid = 'Expired'
+    }
+    else{
+        this.isValid = 'Active'
     }
     next();
 });

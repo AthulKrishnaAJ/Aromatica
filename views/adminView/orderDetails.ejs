@@ -96,13 +96,13 @@
                
                
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/brands"> <i class="icon material-icons md-stars"></i>
-                        <span class="text">Brands</span> </a>
+                    <a class="menu-link" href="/admin/getOffer"> <i class="icon material-icons md-stars"></i>
+                        <span class="text">Add offer</span> </a>
                 </li>
 
 
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/coupon"> <i class="icon material-icons md-class"></i>
+                    <a class="menu-link" href="/admin/getCoupon"> <i class="icon material-icons md-class"></i>
                         <span class="text">Coupon</span> </a>
                 </li>
 
@@ -112,7 +112,7 @@
                 </li>
 
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/salesReport"> <i class="icon material-icons md-description"></i>
+                    <a class="menu-link" href="/admin/getSalesReport"> <i class="icon material-icons md-description"></i>
                         <span class="text">Sales Report</span> </a>
                 </li>
              
@@ -191,7 +191,7 @@
     <div class="content-header">
         <div>
             <h2 class="content-title card-title">Order detail</h2>
-            <p>Details for Order ID : <%=order._id%></p>
+         
         </div>
     </div>
     <div class="card">
@@ -204,7 +204,7 @@
                     <small class="text-muted">Order ID : <%=order._id%> </small>
                 </div>
                 <div class="col-lg-6 col-md-6 ms-auto text-md-end">
-                    <% if(order.status !== "cancelled" && order.status !== "delivered" && order.status !== "returned"){%>
+                    <% if(order.status !== "cancelled" && order.status !== "delivered" && order.status !== "returned" && order.status !== "payment failed"){%>
                     <select id="statusSelect" class="form-select d-inline-block mb-lg-0 mb-15 mw-200">
                         <option>Change status</option>
                         <% if(order.status !== "return pending"){%>
@@ -231,6 +231,9 @@
                         <% if(order.status === "returned"){%>
                         <h6 >status: <span class="text-primary">Order <%=order.status%></span></h6>
                        <h6>Reason for Return : <span class="text-muted" style="font-size: 12px;"><%=order.returnedReason%></span></h6>
+                       <%}%>
+                       <%if(order.status === "payment failed"){%>
+                        <h6 >status: <span class="text-danger"><%=order.status%></span></h6>
                        <%}%>
                     <%}%>
                 </div>
@@ -347,6 +350,8 @@
                                                     <span class="badge rounded-pill alert-primary"><%=order.status%></span>
                                                     <%}else if(order.status === "return pending"){%>
                                                     <span class="badge rounded-pill alert-dark"><%=order.status%></span>
+                                                    <%}else if(order.status === "payment failed"){%>
+                                                    <span class="badge rounded-pill alert-danger"><%=order.status%></span>
                                                     <%}%>
                                                 </dd>
                                             </dl>
@@ -409,7 +414,7 @@
                         text: "Please select a status",
                         duration: 3000,
                         close: true,
-                        backgroundColor: "red",
+                        backgroundColor: "#dc3545",
                     }).showToast();
             return false;
             }
@@ -428,7 +433,7 @@
                             text: response.message,
                             duration: 3000,
                             close: true,
-                            backgroundColor: "light blue",
+                            backgroundColor: "#28a745",
                             }).showToast();
 
                             setTimeout(() => {
@@ -440,7 +445,7 @@
                             text: response.message,
                             duration: 3000,
                             close: true,
-                            backgroundColor: "red",
+                            backgroundColor: "#dc3545",
                             }).showToast();
                         }
                     },

@@ -2,6 +2,7 @@ const nodeMailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 
 
+
 const sendOtpByEmail = async(email,otp) => {
    
     try{
@@ -42,7 +43,7 @@ const sendOtpByEmail = async(email,otp) => {
 }
 
 
-
+// hashing password
 const securePassword = async(password) => {
         try{
             const hashPassword = await bcrypt.hash(password,10);

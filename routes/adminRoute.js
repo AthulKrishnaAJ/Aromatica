@@ -8,7 +8,8 @@ const categoryController = require("../controllers/categoryController");
 const productController = require("../controllers/productController");
 const customerController = require("../controllers/customerController");
 const orderController = require("../controllers/orderController");
-const couponController = require("../controllers/couponController")
+const couponController = require("../controllers/couponController");
+const offerController = require('../controllers/offerController')
 
 const route = express.Router()
 route.use(nocache());
@@ -75,6 +76,17 @@ route.post("/addCoupon",isAdmin,couponController.addingCoupon);
 route.put("/changeCouponStatus/:couponId",isAdmin,couponController.changeCouponStatus);
 route.post("/deleteCoupon/:couponId",isAdmin,couponController.deleteCoupon);
 
+
+// sales report actions
+route.get('/getSalesReport', isAdmin, adminController.getSalesReportPage);
+route.get('/getCustomSalesReport', isAdmin, adminController.getCustomSalesReport);
+route.post('/generatePdf', isAdmin, adminController.generatePdf);
+
+
+
+// offer actions
+route.get('/getOffer', isAdmin, offerController.getOfferPage);
+route.post('/addOffer', isAdmin, offerController.addOffer)
 
 module.exports = route
 

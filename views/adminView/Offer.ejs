@@ -1,0 +1,485 @@
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:32:35 GMT -->
+<head>
+    <meta charset="utf-8">
+    <title>Aromatica admin</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:title" content="">
+    <meta property="og:type" content="">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="admin-assets/imgs/theme/favicon.svg">
+    <!-- Template CSS -->
+    <link href="/admin-assets/css/main.css" rel="stylesheet" type="text/css" />
+   <!-- Include SweetAlert CSS  from CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css">
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.css"> -->
+
+
+
+<!--Toastify css link
+============================= -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<style>
+    .error-message{
+        color: rgb(252, 14, 14);
+        font-size: 12px;
+    }
+</style>
+
+</head>
+
+<body>
+    <div class="screen-overlay"></div>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <div class="aside-top">
+           <button class="btn btn-icon btn-aside-minimize"> <i class="text-muted material-icons md-menu_open"></i> </button>  
+        </div>
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin"> <i class="icon material-icons md-home"></i>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- User -->
+
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/users"> <i class="icon material-icons md-person"></i>
+                        <span class="text">Customers</span>
+                    </a>
+
+                </li>
+
+
+                <!-- Products -->
+
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/product"> <i class="icon material-icons md-shopping_bag"></i>
+                        <span class="text">Products</span>
+                    </a>
+                </li>
+                <!-- <a href="">Hiii</a> -->
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/category"> <i class="icon material-icons md-map"></i>
+                        <span class="text">Category</span>
+                    </a>
+
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/orderList"> <i class="icon material-icons md-shopping_cart"></i>
+                        <span class="text">Orders</span>
+                    </a>
+                  
+                </li>
+             
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/addProduct"> <i class="icon material-icons md-add_box"></i>
+                        <span class="text">Add product</span>
+                    </a>
+                  
+                </li>
+               
+               
+               
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/getOffer"> <i class="icon material-icons md-stars"></i>
+                        <span class="text">Add offer</span> </a>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/getCoupon"> <i class="icon material-icons md-class"></i>
+                        <span class="text">Coupon</span> </a>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/banner"> <i class="icon material-icons md-photo_size_select_actual"></i>
+                        <span class="text">Banner</span> </a>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/getSalesReport"> <i class="icon material-icons md-description"></i>
+                        <span class="text">Sales Report</span> </a>
+                </li>
+             
+            </ul>
+            <hr>
+            <ul class="menu-aside">
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="#"> <i class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="page-settings-1.html">Setting sample 1</a>
+                        <a href="page-settings-2.html">Setting sample 2</a>
+                    </div>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="page-blank.html"> <i class="icon material-icons md-local_offer"></i>
+                        <span class="text"> Starter page </span>
+                    </a>
+                </li>
+            </ul>
+            <br>
+            <br>
+        </nav>
+    </aside>
+    <main class="main-wrap">
+        <header class="main-header navbar">
+            <div class="col-search">
+               
+            </div>
+            <div class="col-nav">
+                <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"> <i class="material-icons md-apps"></i> </button>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link btn-icon" href="#">
+                            <i class="material-icons md-notifications animation-shake"></i>
+                            <span class="badge rounded-pill">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
+                    </li>
+                    <li class="dropdown nav-item">
+                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguage" aria-expanded="false"><i class="material-icons md-public"></i></a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownLanguage">
+                            <a class="dropdown-item text-brand" href="#"><img src="admin-assets/imgs/theme/flag-us.png" alt="English">English</a>
+                            <a class="dropdown-item" href="#"><img src="admin-assets/imgs/theme/flag-fr.png" alt="Français">Français</a>
+                            <a class="dropdown-item" href="#"><img src="admin-assets/imgs/theme/flag-jp.png" alt="Français">日本語</a>
+                            <a class="dropdown-item" href="#"><img src="admin-assets/imgs/theme/flag-cn.png" alt="Français">中国人</a>
+                        </div>
+                    </li>
+                    <li class="dropdown nav-item">
+                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="admin-assets/imgs/people/avatar2.jpg" alt="User"></a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
+                            <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="/admin/logout"><i class="material-icons md-exit_to_app"></i>Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </header>
+
+<!--Header end------------------------------------------------------------------------->
+
+
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Offer </h2>
+            <p>Add offer</p>
+        </div>
+        <!-- <div>
+            <input type="text" placeholder="Search cat" class="form-control bg-white">
+        </div> -->
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <% if(locals.errorMessage){%>
+                        <p id="errorMessage". class="text-danger text-center"><%=locals.errorMessage%></p>
+                    <%}%>
+                    <form id="offerForm" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="offerName" class="form-label">Name</label>
+                            <input type="text" name="offerName" placeholder="Type here" class="form-control" id="offerName" required/>
+                            <span id="nameErrorMessage" class="text-danger text-center"></span>
+                        </div>
+                       
+                        <div class="mb-4">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" name="startDate" class="form-control" id="startDate" required/>
+                        </div>
+                    
+                        <div class="mb-4">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" name="endDate" class="form-control" id="endDate" required/>
+                        </div>
+
+                        <div class="row gx-2">
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label">Offer type</label>
+                                <select class="form-select border" style="width: 150px;" name="offerType" id="offerType">
+                                    <option value="Product">Product</option>
+                                    <option value="Category">Category</option>                              
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row gx-2" id="productSelectRow">
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label">Available Products</label>
+                                <select class="form-select border" style="width: 150px;" name="availableProducts" id="availableProducts">
+                                    <% product.forEach( product => {%>
+                                    <option value="<%= product._id%>"><%= product.productName%></option>
+                                    <%})%>     
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row gx-2" id="categorySelectRow">
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label">Available category</label>
+                                <select class="form-select border" style="width: 150px;" name="availableCategory" id="availableCategory">
+                                    <% category.forEach( cate => {%>
+                                    <option value="<%= cate._id%>"><%= cate.name%></option>
+                                    <%})%>     
+
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="product_name" class="form-label">Discount</label>
+                            <input type="text" name="discountPrice" placeholder="Type here" class="form-control" id="discountPrice" required/>
+                            <span id="discountErrorMessage" class="text-danger text-center"></span>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary" type="submit">Add offer</button>
+                        </div>
+                    </form>
+                    
+
+                </div>
+                <div class="col-md-7 ml-105">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">
+                                    </th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>List/Unlist</th>
+                                    <th class="text-start">Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                              
+
+                               
+                                    <tr>
+                                        <td>
+                                            <!-- Content for the first column, if needed -->
+                                        </td>
+                                        <td class="text-start"></td>
+                                        <td class="text-start"></td>
+                                        <td class="text-start">
+                                            
+                                                <span class="badge rounded-pill alert-success" style="width: 60px;">Listed</span>
+                                        
+                                                <span class="badge rounded-pill alert-danger" style="width: 60px;">Unlisted</span>
+                                      
+                                        </td>                                        
+                                        <td class="text-start">
+                                            
+                                                
+                                                    <a href="" class="text-white">
+                                                        <button class="btn btn-danger" style="width: 70px;">Unlist</button></a>
+                                               
+                                         
+                                                
+                                                    <a href="" >
+                                                        <button class="btn btn-success text-white" style="width: 70px;">List</button></a>
+                                               
+                                           
+                                        </td>
+                                        <td class="text-start">
+                                            <button class="btn btn-info">
+                                                <a href="" class="text-white">Edit</a>
+                                            </button>
+                                        </td>
+                                    </tr>
+                       
+                     
+                            </tbody>
+                        </table>
+                        
+                    </div>
+                </div> <!-- .col// -->
+            </div> <!-- .row // -->
+        </div> <!-- card body .// -->
+    </div> <!-- card .// -->
+</section> <!-- content-main end// -->
+
+
+ 
+
+
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function(){
+
+        const offerTypeSelect = document.querySelector('[name="offerType"]');
+
+        const productSelectRow = document.getElementById('productSelectRow');
+        const categorySelectRow = document.getElementById('categorySelectRow');
+        const availableProducts = document.getElementById('availableProducts');
+        const availableCategory = document.getElementById('availableCategory');
+
+        
+
+        function toggleFields(){
+       
+            if(offerTypeSelect.value === 'Product'){
+                productSelectRow.style.display = 'block'
+                categorySelectRow.style.display = 'none'
+
+                availableCategory.disabled = true
+                availableProducts.disabled = false
+
+            }
+            else if(offerTypeSelect.value === 'Category'){
+                productSelectRow.style.display = 'none'
+                categorySelectRow.style.display = 'block'
+
+                availableProducts.disabled = true
+                availableCategory.disabled = false
+
+            }
+        }
+
+        toggleFields()
+
+        offerTypeSelect.addEventListener('change', toggleFields);
+
+        
+        const offerForm = document.getElementById('offerForm')
+        offerForm.addEventListener('submit', function(event){
+            event.preventDefault();
+
+            const offerName = document.getElementById('offerName').value.trim();
+            const startDate = document.getElementById('startDate').value
+            const endDate = document.getElementById('endDate').value
+            const offerType = document.getElementById('offerType').value
+            const availableProducts = document.getElementById('availableProducts').value
+            const availableCategory = document.getElementById('availableCategory').value
+            const discountPrice = document.getElementById('discountPrice').value.trim();
+
+            // alert(offerName);
+            // alert(startDate);
+            // alert(endDate);
+            // alert(offerType);
+            // alert(availableProducts);
+            // alert(availableCategory);
+            // alert(discountPrice);
+            
+            const formData = JSON.stringify({
+                
+                    offerName : offerName,
+                    startDate : startDate,
+                    endDate : endDate,
+                    offerType : offerType,
+                    availableProducts : availableProducts,
+                    availableCategory : availableCategory,
+                    discountPrice : discountPrice
+
+            })
+            
+
+            fetch('/admin/addOffer',{
+                method : 'post',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body : formData
+            })
+            .then((response) => response.json())
+            .then(data => {
+                if(data.success){
+                    Toastify({
+                    text: date.message,
+                    duration: 3000, 
+                    close: true,
+                    gravity: 'top', 
+                    position: 'right', 
+                    backgroundColor: '#28a745' // Background color
+                }).showToast();
+
+              }else{
+                Toastify({
+                    text: data.message,
+                    duration: 3000,
+                    close: true,
+                    gravity: 'top',
+                    position: 'right',
+                    backgroundColor: '#dc3545'
+                }).showToast();
+              }
+            })
+            .catch(error => {
+            console.error("Error :", error)
+            Toastify({
+                    text: "Something went wrong",
+                    duration: 3000,
+                    close: true,
+                    gravity: 'top',
+                    position: 'right',
+                    backgroundColor: '#dc3545'
+                }).showToast();
+        })
+    })
+      
+
+
+
+})
+       
+</script>
+
+
+
+
+<!--Footer start----------------------------------------------------------------------->
+
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="admin-assets/js/vendors/jquery-3.6.0.min.js"></script>
+<script src="admin-assets/js/vendors/bootstrap.bundle.min.js"></script>
+<script src="admin-assets/js/vendors/select2.min.js"></script>
+<script src="admin-assets/js/vendors/perfect-scrollbar.js"></script>
+<script src="admin-assets/js/vendors/jquery.fullscreen.min.js"></script>
+<script src="admin-assets/js/vendors/chart.js"></script>
+<!-- Main Script -->
+<script src="admin-assets/js/main.js" type="text/javascript"></script>
+<script src="admin-assets/js/custom-chart.js" type="text/javascript"></script>
+</body>
+
+
+<!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:32:57 GMT -->
+</html>

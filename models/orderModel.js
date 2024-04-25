@@ -25,21 +25,20 @@ const orderSchema = new mongoose.Schema({
     }],
     totalCost : {
         type : Number,
-        require : true
+        required : true
     },
     address : {
         addressId : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "Address",
-        required : true
+            type : String,
+            required : true
         },
         addressType : {
             type : String,
-            require : true
+            required : true
         },
         name : {
             type : String,
-            require : true,
+            required : true,
         },
         addressLine : {
             type : String,
@@ -73,8 +72,18 @@ const orderSchema = new mongoose.Schema({
     },
     status : {
         type : String,
-        enum : ["pending", "processing", "shipped", "delivered","cancelled","return pending","returned","failure","payment pending"],
+        enum : ["pending", "processing", "shipped", "delivered","cancelled","return pending","returned","payment failed"],
         default : "pending"
+    },
+    couponDetails : {
+        couponId : {
+             type : mongoose.Schema.Types.ObjectId,
+             ref : 'Coupon'
+        },
+        discountAmount : {
+            type : Number,
+            default : 0
+        },    
     },
     cancellationReason : {
         type : String,

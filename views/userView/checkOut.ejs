@@ -83,6 +83,10 @@
 
 
 <body>
+    <svg width="100" height="100" viewBox="0 0 100 100">
+        <!-- SVG content goes here -->
+      </svg>
+      
 	<!--[if lt IE 8]>
             <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
@@ -733,7 +737,7 @@
 </div>
 <%}%>
 
-            
+<input type="hidden" name="orderId" id="orderId">
 
 
 
@@ -931,7 +935,6 @@ couponRadio.forEach(radio => {
 
 
 $(document).ready(function(){
-
 
 $('#couponForm').submit(function(event){
     event.preventDefault();
@@ -1358,6 +1361,8 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
             const productName = $("#nameOfTheProduct").text();
             const selectedAddressId = $('input[name="selectedAddress"]:checked').val();
             const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+            const orderId = localStorage.getItem('orderId');
+         
             if(!productName.trim()){
                 Toastify({
                         text: "Items not found for placing order!",
@@ -1398,15 +1403,20 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
                     }).showToast();
               return false;
             }
-            if(paymentMethod === 'cash-on-delivery'){
+            if(paymentMethod === 'cash-on-delivery' || paymentMethod === 'wallet'){
                 alert(paymentMethod)
             $.ajax({
                 url : "/placeOrder",
                 method : "post",
                 data : {selectAddressId : selectedAddressId,
-                       paymentMethod : paymentMethod},
+                       paymentMethod : paymentMethod,
+                       orderId : orderId ? orderId : ''},
                 success : (response) => {
+
                     if(response.success){
+
+                    toggleLoadingModal();
+
                         setTimeout(() => {
                             
                                  window.location.href = "/orderSuccess?orderId="+response.orderId
@@ -1414,8 +1424,17 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
                         },4000)
                            
                     }
+                    else{
+                        Swal.fire({
+                            title : 'Warning!',
+                            text : response.message,
+                            icon : 'warning',
+                            timer : 3000
+                        })
+                    }
                 },
                 error : (error) => {
+                    console.log(error)
                     Swal.fire({
                         icon : 'error',
                         title : "Oops...",
@@ -1432,7 +1451,7 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
                     method : 'post',
                     success : (response) => {
                         if(response.success){
-                            alert('response receive after razorpay initialization')
+                            
                             openRazorpayModal(response.razorpayOrder, response.keyId, response.user, selectedAddressId, paymentMethod);
                         }
                     },
@@ -1451,7 +1470,7 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
 
 
     function openRazorpayModal(razorpayOrder, keyId, user, selectedAddressId, paymentMethod){
-        alert('enter the razorpay modal')
+       
         const options = {
                 key : keyId,
                 amount : razorpayOrder.amount,
@@ -1460,8 +1479,7 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
                 order_id : razorpayOrder._id,
                 handler : function(){
 
-                alert("enter the handler function");
-                placeOrder(selectedAddressId, paymentMethod);
+                placeOrder(selectedAddressId, paymentMethod);                
 
                 },
                 prefill : {
@@ -1475,16 +1493,11 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
                 }
             };
             let rzp = new Razorpay(options);
-            rzp.on('payment.success', function(response) {
-                alert('payment success event received');
-              
-            });
-            rzp.on('payment.cancel', function(response) {
-                alert('payment cancel event received');
+
+            rzp.on('payment.failed', function(response) {
                 handleRazorapyFailure(selectedAddressId, paymentMethod)
                  
             });
-
             rzp.open();
 
     }
@@ -1492,7 +1505,7 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
 
 
     function placeOrder(selectedAddressId, paymentMethod){
-        alert('enter the place order function')
+       
         $.ajax({
                     url : "/placeOrder",
                     method : "post",
@@ -1526,8 +1539,10 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
     }
 
 
+    
+
     function handleRazorapyFailure(selectedAddressId, paymentMethod){
-         alert('enter the failure function11111')
+        //  alert('enter the failure function')
         $.ajax({
             url : '/savaRazorpayFailure',
             method : 'post',
@@ -1537,14 +1552,16 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
             },
             success : (response) => {
                 if(response.success){
-                    Swal.fire({
-                        title : 'Oops...',
+                    Toastify({
                         text : 'Payment failed',
-                        icon : 'warning',
-                        onclose : () => {
-                            location.reload();
-                        }
-                    })
+                        duration : 3000,
+                        close : true,
+                        gravity : 'top',
+                        position : 'left',
+                        backgroundColor : '#dc3545',
+                    }).showToast();
+
+                    localStorage.setItem('orderId', response.orderId)
                 }
                 else{
                     Swal.fire({

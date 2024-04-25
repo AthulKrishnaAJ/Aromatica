@@ -8,6 +8,7 @@ const {isLogged} = require("../Authentication/auth");
 const orderController = require("../controllers/orderController");
 const wishlistController = require("../controllers/wishlistController");
 const couponController = require("../controllers/couponController");
+const walletController = require('../controllers/walletController')
 
 
 const route = express.Router();
@@ -35,12 +36,15 @@ route.post("/resetPassword", userController.insertPasswordInResetPassword);
 
 // Profile actions
 route.get("/profile", isLogged, userController.getUserProfile);
+route.get('/getUserOrders', isLogged, userController.getOrders)
+route.get('/getWalletDetails', isLogged, userController.getWalletDetails);
 route.get("/addAddress", isLogged, userController.getAddAddress);
 route.post("/addAddress", isLogged, userController.addAddress);
 route.get("/editAddress", isLogged, userController.getEditAddress);
 route.post("/editAddress", isLogged, userController.updateTheAddress);
 route.post("/deleteAddress", isLogged, userController.deleteAddress);
-route.post("/updateUserDetails", isLogged, userController.updateUserDetails)
+route.post("/updateUserDetails", isLogged, userController.updateUserDetails);
+
 
 
 
@@ -74,7 +78,7 @@ route.post("/checkOut", isLogged, orderController.getCheckOutEditAddress);
 route.post("/checkOutEditAddress", isLogged, orderController.checkOutUpdateAddress);
 route.post("/initiateRazorpay", isLogged, orderController.razorpayInitialization)
 route.post("/placeOrder", isLogged, orderController.placeOrder);
-route.post('/savaRazorpayFailure', isLogged, orderController.handleRazorpayFailure)
+route.post('/savaRazorpayFailure', isLogged, orderController.handleRazorpayFailure);
 route.get("/userOrderDetails", isLogged, orderController.userOrderDetailsPage)
 route.post("/cancelOrderByUser/:orderId", isLogged, orderController.cancelOrderByUser)
 route.post("/returnOrder/:orderId", isLogged, orderController.returnedOrderByUser)
@@ -87,12 +91,18 @@ route.get("/orderSuccess", isLogged, orderController.getOrderSuccessPage);
 route.get("/wishlist", isLogged, wishlistController.getWishlist);
 route.post("/wishlist", isLogged, wishlistController.addToWishlist)
 route.post('/removeWishlist', isLogged, wishlistController.removeProductInWishlist)
+route.post('/addToCartFromWhishlist', isLogged, wishlistController.addToCartFromWhishlist)
 
 
 // coupon action
-route.post('/applyCoupon', isLogged, couponController.couponApply)
-route.post('/removeCoupon', isLogged, couponController.removeCoupon)
+route.post('/applyCoupon', isLogged, couponController.couponApply);
+route.post('/removeCoupon', isLogged, couponController.removeCoupon);
 
+
+
+// wallet actions
+route.post('/addMoney', isLogged, walletController.addMoneyInWallet);
+route.post('/addMoneySuccess', isLogged, walletController.addMoneySuccess)
 
 module.exports = route;
 

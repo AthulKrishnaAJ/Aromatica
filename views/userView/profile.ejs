@@ -358,18 +358,18 @@
                                             role="tab" aria-controls="orders" aria-selected="false"><i
                                                 class="fi-rs-shopping-bag mr-10"></i>My Orders</a>
                                     </li>
-                                    <!-- <li class="nav-item">
+                                    <li class="nav-item">
                                         <a class="nav-link text-muted " id="track-orders-tab" data-bs-toggle="tab"
                                             href="#track-orders" role="tab" aria-controls="track-orders"
                                             aria-selected="false"><i
                                                 class="fi-rs-shopping-cart-check mr-10"></i>Wallet Status</a>
-                                    </li> -->
-                                    <!-- <li class="nav-item">
+                                    </li>
+                                    <li class="nav-item">
                                         <a class="nav-link text-muted " id="track-orders-tab" data-bs-toggle="tab"
                                             href="#wallet-history" role="tab" aria-controls="track-orders"
                                             aria-selected="false"><i
                                                 class="fi-rs-shopping-cart-check mr-10"></i>Wallet History</a>
-                                    </li> -->
+                                    </li>
                                     <!-- <li class="nav-item">
                                         <a class="nav-link text-muted " id="track-orders-tab" data-bs-toggle="tab"
                                             href="#referal" role="tab" aria-controls="track-orders"
@@ -432,14 +432,14 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table">
+                                                <table class="table" id="order-table">
                                                     <thead>
                                                       
                                                         <tr>
                                                               
                                                             <th>Image</th>
                                                             <th>Name</th>
-                                                            <th>Order Id</th>
+                                                            <th>Date</th>
                                                             <th>Status</th>
                                                             <th>Total</th>
                                                             <th>Actions</th>
@@ -458,7 +458,7 @@
                                                                         <td><%=item.productId.productName%></td>
                                                                        
                                                                     <%if(i === 0){%>
-                                                                    <td><%=order._id%></td>
+                                                                    <td><%=order.createdAt.toLocaleDateString()%></td>
                                                                 
                                                                     <td><%=order.status%></td>
 
@@ -482,6 +482,14 @@
                                                      <%}%>
                                                     </tbody>
                                                 </table>
+                                                <nav aria-label="Page navigation">
+                                                    <ul id="pagination" class="pagination justify-content-center">
+                                                        <!-- Pagination links will be dynamically added here -->
+                                                        
+                                                            
+                                                    </ul>
+                                                </nav>
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -496,16 +504,21 @@
 
                                             <div class="row">
                                                 <div class="col-lg-8 mx-auto text-center mt-90">
-                                                    <form>
+                                                    <!-- <form > -->
                                                         <div class="form-group">
                                                             <label for="walletAmount" class="h4">Amount</label>
-                                                            <div class="h3">₹amout
-                                                            </div>
+                                                            <%if(wallet && wallet !== ''){%>
+                                                            <div class="h5" id="walletMoney">Rs.<%=wallet.balance%>.00</div>
+                                                            <%} else {%>
+                                                                <div class="h5" id="walletMoney">Rs.0.00</div>
+                                                            <%}%>
+                                                            
+                                                         
                                                         </div>
 
                                                         <button type="button" class="btn btn-success"
-                                                            onclick="">Add Money</button>
-                                                    </form>
+                                                            onclick="" id="addMoneyButton">Add Money</button>
+                                                    <!-- </form> -->
                                                 </div>
                                             </div>
 
@@ -529,41 +542,43 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table">
+                                                <table class="table" id="wallet-table">
                                                     <thead>
                                                         <tr>
+                                                            <th>No:</th>
                                                             <th>Date</th>
                                                             <th>Status</th>
                                                             <th>Amount</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-
-                                                        
-
-                                                            
+                                                        <% if (wallet && wallet !== '' && wallet.history.length > 0) { %>
+                                                            <% 
+                                                            wallet.history.sort((a, b) => new Date(b.date) - new Date(a.date))
+                                                            wallet.history.forEach((wal, index) => { 
+                                                            %>
                                                                 <tr>
-                                                                    <td>
-                                                                        new date
-                                                                    </td>
-
-                                                                    <td>
-                                                                       status
-                                                                    </td>
-                                                                    <td>
-                                                                       history amout
-                                                                    </td>
+                                                                    <td><%= index + 1%></td>
+                                                                    <td><%= wal.date.toLocaleDateString() %></td>
+                                                                    <td><%= wal.status %></td>
+                                                                    <td>Rs.<%= wal.payment %>.00</td>
                                                                 </tr>
-                                                                
-
-                                                                 
-
-                                                                        <td>No Orders found</td>
-
-                                                                        
-
+                                                            <% }) %>
+                                                        <% } else { %>
+                                                            <tr>
+                                                                <td colspan="3">No transactions here</td>
+                                                            </tr>
+                                                        <% } %>
                                                     </tbody>
+                                                    
                                                 </table>
+                                                <nav aria-label="Page navigation">
+                                                    <ul id="walletPagination" class="pagination justify-content-center">
+                                                        <!-- Pagination links will be dynamically added here -->
+                                                        
+                                                      
+                                                    </ul>
+                                                </nav>
                                             </div>
                                         </div>
                                     </div>
@@ -742,6 +757,38 @@
 
 
 
+<div class="modal fade" id="addMoneyModal" tabindex="-1" role="dialog" aria-labelledby="addMoneyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMoneyModalLabel">Add Money to Wallet</h5>
+                <!-- Close button -->
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMoneyForm">
+                    <div class="form-group">
+                        <label for="amount"><sup class="text-danger">*</sup>Amount (INR)</label>
+                        <div><span class="text-danger" id="erroAmount"></span></div>
+                        <input type="number" class="form-control" id="amount" name="amount" autocomplete="off" >
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Proceed to Pay</button>
+
+                    </div>
+                 
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
  <!-- Footer area start---------------------------------------------------------------------------->
  <div class="footer-area mt-5">
     <!-- Footer Top -->
@@ -905,9 +952,224 @@
 
    <!-- Include jQuery first -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
+    const changePage = async(page) => {
+        try{
+        const response = await fetch(`/getUserOrders?page=${page}`);
+        const {orders, totalPage} = await response.json();
+
+        const tbody = document.querySelector("#order-table tbody");
+        tbody.innerHTML = ''
+
+        orders.forEach((order) => {
+            const row = `
+                <tr>
+                    <td><img src="/uploads/product-images/${order.items[0].productId.productImage[0]}" alt="product" style="width: 50px; height: 50px;"></td>
+                    <td>${order.items[0].productId.productName}</td>
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>${order.status}</td>
+                    <td>Rs.${order.totalCost}.00</td>
+                    <td><a href="/userOrderDetails?orderId=${order._id}" class="btn-small d-block">View Order</a></td>
+                </tr>
+            `;
+
+            tbody.insertAdjacentHTML("beforeend", row)
+        });
+
+        const pagination = document.querySelector('#pagination');
+        pagination.innerHTML = ''
+
+
+
+        for(let i = 1; i <= totalPage; i++){
+        const li = `<li class="page-item ${page === i ? 'active' : ''}"><button class="page-link" onclick="changePage(${i})">${i}</button></li>`;
+            pagination.insertAdjacentHTML("beforeend", li)
+        }
+     }catch(error){
+        console.log(`Error in getting order details with pagination ${error}`)
+     }
+    }
+
+
+
+    const changeWalletPage = async(page) => {
+        try{
+        const response = await fetch(`/getWalletDetails?page=${page}`);
+        const {transaction, totalPage} = await response.json();
+
+
+        const tbody = document.querySelector('#wallet-table tbody');
+        tbody.innerHTML = ''
+
+        transaction.forEach((trans, index) => {
+            const row = `
+                <tr>
+                    <td>${(page - 1) * 5 + index + 1}</td>
+                    <td>${new Date(trans.date).toLocaleDateString()}</td>
+                    <td>${trans.status}</td>
+                    <td>Rs.${trans.payment}.00</td>
+                </tr>
+            `;
+
+            tbody.insertAdjacentHTML('beforeend', row)
+        })
+
+        const pagination = document.getElementById('walletPagination');
+        pagination.innerHTML = ''
+
+        for(let i = 1; i <= totalPage; i++){
+            const li = `<li class="page-item ${page === i ? 'active' : ''}"><button class="page-link" onclick="changeWalletPage(${i})">${i}</button></li>`;
+            pagination.insertAdjacentHTML('beforeend', li)
+        }
+     }catch(error){
+        console.error(`Error in getting wallet details with pagination ${error}`);
+     }
+        
+    }
+
+    window.onload = () => {
+        changePage(1)
+        changeWalletPage(1)
+    }
+
+
+   
+</script>
+<script>
+
+    $(document).ready(function(){
+        $('#addMoneyButton').click(function(event){
+            event.preventDefault();
+            $('#addMoneyModal').modal('show');
+
+            $('#addMoneyForm').submit(function(event){
+                event.preventDefault();
+                
+                const amount = $('#amount').val().trim();
+                let isValid = true
+
+                if(amount === '' || amount === null){
+                    $('#erroAmount').text('Field is require');
+                    isValid = false
+                }
+                else if(amount <= 0){
+                    $('#erroAmount').text('Please enter the valid money');
+                    isValid = false
+                }
+                else{
+                    $('#erroAmount').text('')
+                }
+
+
+                if(isValid){
+
+                $.ajax({
+                    url : '/addMoney',
+                    method : 'post',
+                    data : {amount : amount},
+                    success : (response) => {
+                         $('#addMoneyModal').modal('hide');
+
+                        if(response.success){
+                            const orderId = response.order.id
+                            
+                            let options = {
+                                key : response.keyId,
+                                amount : response.order.amount,
+                                currency : response.order.currency,
+                                name : 'Aromatica',
+                                order_id : orderId,
+                                handler : function(res){
+                                   
+                                    walletPayment(res)
+                                },
+                                prefill : {
+                                    name : response.user.name,
+                                    email : response.user.email,
+                                    contact : response.user.mobile
+                                },
+                                theme : {
+                                    color : '#F37254',
+
+                                 }
+
+                            };
+                            let rzp = new Razorpay(options);
+                            rzp.open();
+                        }
+                    },
+                    error : (error) => {
+                        console.log("error in ajax :",error);
+                        Swal.fire({
+                        title : "Error!",
+                        text : 'Something went wrong, please try again',
+                        icon : 'error'
+                    })
+                    }
+                })
+             }
+            })
+
+        })
+    })
+
+
+function walletPayment(response){
+        $.ajax({
+            url : '/addMoneySuccess',
+            method : 'post',
+            data : response,
+                  success : (response) => {
+                    if(response.success){
+                       
+                        Toastify({
+                            text : response.message,
+                            duration : 3000,
+                            close : true,
+                            backgroundColor : '#28a745',
+                            gravity : 'top',
+                            position : 'right'
+                        }).showToast();
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        },3000);
+                    }
+                    else{
+                        Toastify({
+                            text : response.message,
+                            duration : 3000,
+                            close : true,
+                            backgroundColor : '#dc3545',
+                            gravity : 'top',
+                            position : 'left'
+                        }).showToast();
+
+                    }
+                  },
+                  error : (error) => {
+                    console.log("Error in ajax :",error);
+                    Swal.fire({
+                        title : "Error!",
+                        text : 'Something went wrong, please try again',
+                        icon : 'error'
+                    })
+                  }
+        })
+}
+
+
+
+
+
+
+
+
+
+
+
     const successMessage = document.getElementById("successMessage")
     setTimeout(() => {
         successMessage.style.display = "none"

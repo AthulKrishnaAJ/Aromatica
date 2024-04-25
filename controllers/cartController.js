@@ -12,11 +12,12 @@ const getCart = async(req,res) => {
         const userId = req.session.user
         const couponDetails = await Coupon.find({isActive : true});
         const cart = await Cart.findOne({user : userId}).populate('items.product');
-
+        
+        if(cart && cart.items.length > 0){
         const productId = cart.items.map(item => item.product._id);
         const products = await Products.find({_id : {$in : productId}})
 
-
+ 
         cart.items.forEach((item) => {
             const product = products.find(pro => pro._id.equals(item.product._id))
             item.price = product.salePrice * item.quantity
@@ -33,6 +34,7 @@ const getCart = async(req,res) => {
         cart.totalCost = totalCost
         
         await cart.save();
+    }
 
         if(!cart){
             res.render("userView/cart",{cart : "Cart is empty" , user : userId, couponDetails : couponDetails});
@@ -56,9 +58,6 @@ const addToCart = async(req,res) => {
         const quantity = req.query.quantity
         const userId = req.session.user
 
-        // if(!userId){
-        //     return res.json({status : "Please Login"})
-        // }
 
         let cart = await Cart.findOne({user : userId});
         const product = await Products.findById(productId);
@@ -70,10 +69,9 @@ const addToCart = async(req,res) => {
         if(!cart){
             cart = new Cart({user : userId});
         }
-
+        
         const existingItem = cart.items.find(item => item.product.equals(productId));
 
- 
         if(!existingItem || (existingItem.quantity + parseInt(quantity)) <= product.quantity){
 
         if(existingItem){
@@ -93,7 +91,7 @@ const addToCart = async(req,res) => {
         cart.totalCost += product.salePrice * parseInt(quantity);
 
         await cart.save();
-
+        console.log("Product added in to cart");
         res.json({status : true});
     }
     else{

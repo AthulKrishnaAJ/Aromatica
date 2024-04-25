@@ -4,38 +4,38 @@ const productSchema = new mongoose.Schema({
  
     productName : {
         type : String,
-        require : true
+        required : true
     },
     description : {
         type : String,
-        require : true
+        required : true
     },
     category : {
         categoryId : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "Category",
-        require : true
+        required : true
         },
         name : {
             type : String,
-            require : true
+            required : true
         }
     },
     regularPrice : {
         type : Number,
-        require : true
+        required : true
     },
     salePrice : {
         type : Number,
-        require : true
+        required : true
     },
     createdOn : {
         type : String,
-        require : true
+        required : true
     },
     quantity : {
         type : Number,
-        require : true
+        required : true
     },
     isBlocked : {
         type : Boolean,
@@ -43,11 +43,11 @@ const productSchema = new mongoose.Schema({
     },
     productImage : {
         type : Array,
-        require : true
+        required : true
     },
     size : {
         type : Number,
-        require : true
+        required : true
     }
 },{timestamps : true});
 

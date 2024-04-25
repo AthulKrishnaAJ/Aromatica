@@ -156,8 +156,8 @@ const couponApply = async(req,res) => {
             return res.json({success : false, message : "Coupon already used"});
         }
 
-        if(userCart.appliedCoupon){
-            return res.json({success : false, message : "Already use a coupon"});
+        if(userCart.appliedCoupon || userCart.appliedCoupon === coupon._id){
+            return res.json({success : false, message : "Already this coupon"});
         }
 
         userCart.totalCost -= coupon.discount

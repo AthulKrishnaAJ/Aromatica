@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const toast = require("toastify-js");
 const jwt = require("jsonwebtoken");
 
+
+
 // file requirements
 const User = require("../models/userModel");
 const Products = require("../models/productModel");
@@ -12,13 +14,16 @@ const Address = require("../models/addressModel");
 const userHelper = require("../helpers/userHelper");
 const Category = require("../models/categoryModel");
 const Order = require("../models/orderModel");
-
+const Wallet = require('../models/walletModel');
 
 const { use } = require("bcrypt/promises");
 const { findById } = require("../models/categoryModel");
 const { query } = require("express");
-const category = require("../models/categoryModel");
-const product = require("../models/productModel");
+
+
+
+
+
 
 //Load home Page
 const loadHomePage = async(req,res) => {
@@ -327,10 +332,10 @@ const getProductDetails = async(req,res) => {
 const getUserProfile = async(req,res) => {
     try{
         const userId = req.session.user
-
         const userData = await User.findById(userId);
         console.log(`User data is  => ${userData}`);
 
+       
         const userAddress = await Address.findOne({user : userId});
 
         const order = await Order.find({user : userId}).populate({
@@ -338,11 +343,66 @@ const getUserProfile = async(req,res) => {
             select : "productName productImage",
             
         }).sort({createdAt : -1})
-        res.render("userView/profile",{user : userData , userAddress : userAddress, order : order});
+        
+
+        const wallet = await Wallet.findOne({user : userId});
+
+    
+        res.render("userView/profile",{user : userData , userAddress : userAddress, order : order, wallet : wallet});
         console.log("Render user profile page");
     }catch(error){
         console.log(`Internal server occur while rendering user profile ${error.message}`);
         res.status(500).send("Internal server occur");
+    }
+}
+
+
+
+const getOrders = async(req, res) => {
+    try{
+        const userId = req.session.user
+        const currentPage = parseInt(req.query.page) || 1
+        const limit = 5
+        const skip = (currentPage - 1) * limit
+
+        const orders = await Order.find({user : userId})
+        .populate({
+            path : "items.productId",
+            select : "productName productImage"
+        })
+        .sort({createdAt : -1})
+        .skip(skip)
+        .limit(limit)
+
+        const totalCount = await Order.countDocuments({user : userId});
+        const totalPage = Math.ceil(totalCount / limit);
+
+        res.json({orders : orders, totalPage : totalPage})
+    }catch(error){
+        console.log('Error in the getting orders with pagination :', error.message);
+        res.status(500).send("Intrenal server error");
+    }
+}
+
+
+const getWalletDetails = async(req, res) => {
+    try{
+        const userId = req.session.user
+        const currentPage = parseInt(req.query.page) || 1
+        const limit = 5
+        const skip = (currentPage - 1) * limit
+
+        const wallet = await Wallet.findOne({user : userId})
+
+        const totalCount = wallet.history.length
+        const totalPage = Math.ceil(totalCount / limit);
+        const transaction = wallet.history.slice(skip, skip + limit);
+
+        res.json({transaction : transaction, totalPage : totalPage});
+
+    }catch(error){
+        console.log("Error in getting wallet details with pagination :", error.message);
+        res.status(500).send("Internal server error");
     }
 }
 
@@ -943,6 +1003,8 @@ const updateUserDetails = async(req,res) => {
 
 
 
+
+
 const getEmailVerificationForForgotPassword = async(req,res) => {
     try{ 
         res.render("userView/forgotPassEmail")
@@ -1062,6 +1124,8 @@ module.exports = {
     logoutUser,
     getProductDetails,
     getUserProfile,
+    getOrders,
+    getWalletDetails,
     getAddAddress,
     addAddress,
     getEditAddress,
@@ -1078,7 +1142,8 @@ module.exports = {
     getEmailVerificationForForgotPassword,
     insertEmailInEmailverfication,
     getResetPasswordForForgotPassword,
-    insertPasswordInResetPassword
+    insertPasswordInResetPassword,
+
    
     
    

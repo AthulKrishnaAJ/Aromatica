@@ -408,12 +408,20 @@
                                         <input type="button" class="qty-increase" onclick="var qty_el = document.getElementById('qty'); var qty = qty_el.value; if( !isNaN( qty )) qty_el.value++;return false;" value="+">
                                     </div> -->
                                     <button type="button" class="btn" onclick="addToCart('<%=product._id%>')"><span>Add to Cart</span></button>
+                                    <button type="button" class="btn addToWishlist" data-product-id="<%=product._id%>"><span>Add to wishlist</span></button>
                                 </div>
                                 <%}else{%>
                                     <!-- <h5 class="text-danger">out of stock...</h5> -->
+                                  
                                     <button type="button" class="btn" onclick="addToCart('<%=product._id%>')"><span class="text-danger">Out of stock</span></button>
+                               
+                                    <div class="add-to-cart">                                    
+                                        <button type="button" class="btn addToWishlist" data-product-id="<%=product._id%>"><span>Add to wishlist</span></button>
+                                        </div>
 
                                     <%}%>
+                                    
+
                             </div>
                         </div><!-- End Single Product Content View -->
                     </div>
@@ -828,6 +836,53 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+
+$(document).ready(function(){
+            $('.addToWishlist').on('click',function(){
+                let productId = $(this).data('product-id')
+                
+                $.ajax({
+                    url : '/wishlist',
+                    method : 'post',
+                    data : {productId},
+                    success : (response) => {
+                        if(response.status === true){
+                            Swal.fire({
+                                title : 'Success!',
+                                text : response.message,
+                                icon : 'success',
+                                timer : 3000
+                            })
+                        }
+                        else{
+                            Swal.fire({
+                                title : 'Warning!',
+                                text : response.message || "Please login",
+                                icon : 'warning',
+                                timer : 3000
+                            })
+                        }
+                    },
+                    error : (error) => {
+                        console.log("ajaxxx error : ",error)
+                        Swal.fire({
+                                title : 'Error',
+                                text : 'somthing went wrong please try again',
+                                icon : 'error',
+                                timer : 3000
+                            })
+                    }
+                })
+            })
+        })
+
+
+
+
+
+
+
+
     function addToCart(productId){
         let quantity = 1
         $.ajax({
@@ -850,7 +905,7 @@
                         Swal.fire({
                         title: "Out of stock",
                         text:  "Failed to add cart",
-                        icon: "error",
+                        icon: "warning",
                         showConfirmButton: true
                     });
                 }
@@ -859,7 +914,7 @@
                     Swal.fire({
                         title: "Product Unavailable",
                         text: "Selected product is unavailble",
-                        icon: "error",
+                        icon: "warning",
                         showConfirmButton: true
                     });
                 }

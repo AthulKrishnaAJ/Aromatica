@@ -1,5 +1,6 @@
 const Wishlist = require("../models/wihslistModel");
 const Product = require("../models/productModel")
+const Cart = require('../models/cartModel')
 
 
 // get wishlist page
@@ -81,8 +82,67 @@ const removeProductInWishlist = async(req,res) => {
     }
 }
 
+
+const addToCartFromWhishlist = async(req,res) => {
+    try{
+        const productId = req.query.id
+        const quantity = req.query.quantity
+        const userId = req.session.user
+
+
+        let cart = await Cart.findOne({user : userId});
+        const product = await Product.findById(productId);
+        const proId = product._id
+        if(!product || product.quantity <= 0 || product.isBlocked){
+           return res.json({status : "Product Unavailable"});
+        }
+        
+        if(!cart){
+            cart = new Cart({user : userId});
+        }
+        
+        const existingItem = cart.items.find(item => item.product.equals(productId));
+
+        if(!existingItem || (existingItem.quantity + parseInt(quantity)) <= product.quantity){
+
+        if(existingItem){
+            existingItem.quantity += parseInt(quantity)
+            existingItem.price += product.salePrice *  parseInt(quantity)
+           
+        }
+        else{
+            cart.items.push({
+                product : productId,
+                quantity : parseInt(quantity),
+                price : product.salePrice * parseInt(quantity)
+            })
+        }
+
+        cart.totalQuantity += parseInt(quantity);
+        cart.totalCost += product.salePrice * parseInt(quantity);
+
+        await cart.save();
+        console.log("Product added in to cart")
+        res.json({status : true, productId : proId});
+        
+    }
+    else{
+        res.json({status : false , message : "Out of stock"});
+    }
+
+    }catch(error){
+      console.error(`Internal server error occur in add to cart ${error.message}`);
+      res.status(500).json({status : false, message : "Something Wrong"});
+    }
+    
+
+}
+
+
+
 module.exports = {
     getWishlist,
     addToWishlist,
-    removeProductInWishlist
+    removeProductInWishlist,
+    addToCartFromWhishlist
 }

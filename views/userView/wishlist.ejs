@@ -603,22 +603,29 @@
             $('.addToCart').on('click',function(event){
                 event.preventDefault()
                 let productId = $(this).find('a').data('product-id');
-         
+              
         let quantity = 1
        
         $.ajax({
-            url : `/addToCart?id=${productId}&quantity=${quantity}`,
+            url : `/addToCartFromWhishlist?id=${productId}&quantity=${quantity}`,
             method : "post",
             success : (res) => {
                 if(res.status === true){
-                   console.log("Enter the success response block");
+
+                  let productId = res.productId
+
                     Swal.fire({
                         title : "Added to Cart !",
                         text : "Continue Shopping",
                         icon : "success",
                         timer : 2000,
                         showConfirmButton : false
-                    });
+                    }).then(() => {
+                     removeProductAfterAddToCart(productId, event);
+                    })
+
+                
+
                 }             
                 else{
                     if(res.status === false && res.message === "Out of stock"){
@@ -674,6 +681,35 @@
 
       });
     });
+
+
+    function removeProductAfterAddToCart(productId, event){
+        event.preventDefault();
+
+        $.ajax({
+            url : '/removeWishlist',
+            method : 'post',
+            data : {productId : productId},
+            success : (response) => {
+                if(response.status){
+
+                    location.reload();
+                }
+                else{
+                    Swal.fire({
+                        title : "Error!",
+                        text : response.message,
+                        icon : 'error',
+                        timer : 3000
+                    });
+                }
+            },
+            error : (error) => {
+                console.log("Error in ajax :", error);
+
+            }
+        })
+    }
    
 </script>
 
