@@ -711,7 +711,7 @@
                                             <form id="editUserForm" method="post" action="">
                                                 <div class="row">
                                                     <div class="form-group col-md-8">
-                                                        <label> Name <span class="required text-danger">*</span></label>
+                                                        <span class="required text-danger">*</span><label> Name</label>
                                                        
                                                         <div><span class="text-danger" id="newNameError"></span></div>   
 
@@ -720,15 +720,25 @@
                                                     </div>
 
                                                     <div class="form-group col-md-8">                                                                                                           
-                                                        <label>Mobile Number <span class="required text-danger">*</span></label>
+                                                        <span class="required text-danger">*</span><label>Mobile Number </label>
 
                                                         <div><span class="text-danger" id="newMobileError"></span></div>
 
                                                         <input id="newMobile" value="<%=user.mobile%>"
                                                             class="form-control square" name="phone" type="text">
                                                     </div>
+
                                                     <div class="form-group col-md-8">
-                                                        <label>Password <span class="required text-danger">*</span></label>
+                                                        <span class="required text-danger">*</span><label>Current Password</label>
+
+                                                        <div><span class="text-danger" id="currentPasswordError"></span></div>
+
+                                                        <input id="currentPassword" value=""
+                                                            class="form-control square" name="cPassword" type="password">
+                                                    </div>
+
+                                                    <div class="form-group col-md-8">
+                                                        <span class="required text-danger">*</span> <label>New Password</label>
 
                                                         <div><span class="text-danger" id="newPasswordError"></span></div>
 
@@ -1187,6 +1197,7 @@ function walletPayment(response){
 
             let name = $('#newName').val().trim()
             let mobile = $('#newMobile').val().trim()
+            let currentPassword = $('#currentPassword').val().trim();
             let password = $('#newPassword').val().trim()
 
             const nameValid = /^[a-zA-Z]+(?: [a-zA-Z]+)*$/;
@@ -1229,17 +1240,17 @@ function walletPayment(response){
 
             // password validation
             if(password === ''){
-                $('#newPasswordError').text('Password is required');
-                isValid = false
-            }
-            else if(!passwordValid.test(password)){
-                $('#newPasswordError').text('Should contain mixed characters');
-                isValid = false
+                isValid = true
             }
             else if(password.length <= 7){
                 $('#newPasswordError').text('Should contain minimum 8 characters');
                 isValid = false
             }
+            else if(!passwordValid.test(password)){
+                $('#newPasswordError').text('Should contain mixed characters Aa@123');
+                isValid = false
+            }
+
 
 
             if(isValid){
@@ -1249,6 +1260,7 @@ function walletPayment(response){
                 data : {
                     name :name,
                     mobile : mobile,
+                    currentPassword : currentPassword,
                     password : password
                 },
                 success : (response) => {
@@ -1257,19 +1269,37 @@ function walletPayment(response){
                         text: response.message,
                         duration: 3000,
                         close: true,
-                        backgroundColor: "light blue",
+                        backgroundColor: "#28a745",
                        
                     }).showToast();
 
                     setTimeout(() => {
                         location.reload();
                     },3000);
+
+                }else if(response.message === 'Current password is not match' || response.message === 'Enter the current password'){
+             
+                    $('#currentPasswordError').text(response.message);
+
+                    setTimeout(() => {
+                    $('#currentPasswordError').text('');
+                    }, 4000);
+
+                }else if(response.message === 'Enter a new password'){
+                 
+                    $('#newPasswordError').text(response.message);
+
+                    setTimeout(() => {
+                    $('#newPasswordError').text('');
+                    }, 4000);
+                    
                 }else{
+                    
                     Toastify({
                         text: response.message,
                         duration: 3000,
                         close: true,
-                        backgroundColor: "red",
+                        backgroundColor: "#dc3545",
                      
                     }).showToast();
                 }

@@ -79,9 +79,14 @@
                
                
                
-                <li class="menu-item">
-                    <a class="menu-link" href="/admin/getOffer"> <i class="icon material-icons md-stars"></i>
-                        <span class="text">Add offer</span> </a>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="#"> <i class="icon material-icons md-stars"></i>
+                        <span class="text">Offers</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/getCategoryOffer">Category Offer</a>
+                        <a href="/admin/getProductOffer">Product Offer</a>
+                    </div>
                 </li>
 
 
@@ -193,6 +198,7 @@
         <table class="table table-striped">
             <thead>
               <tr>
+                <th scope="col" class="text-center"><b>Product Image</b></th>
                 <th scope="col" class="text-center"><b>Product name</b></th>
                 <th scope="col" class="text-center"><b>Category</b></th>
                 <th scope="col" class="text-center"><b>Sale Price</b></th>
@@ -206,6 +212,7 @@
                 <% productData.forEach(product => { %>
               
                     <tr>
+                        <td class="text-center" ><img src="/uploads/product-images/<%=product.productImage[0]%>" alt="" style="width: 40px;"  ></td>
                         <td class="text-center"><%= product.productName %></td>
                         <td class="text-center"><%= product.category.name %></td>
                         <td class="text-center">₹<%= product.salePrice %></td>

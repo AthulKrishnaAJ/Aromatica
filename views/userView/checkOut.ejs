@@ -83,9 +83,7 @@
 
 
 <body>
-    <svg width="100" height="100" viewBox="0 0 100 100">
-        <!-- SVG content goes here -->
-      </svg>
+    
       
 	<!--[if lt IE 8]>
             <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
@@ -365,13 +363,13 @@
                                             
 										</p>
 									</form>
-                                    
-                                    <div class="card card-body w-50 mt-4" id="activeCoupons">
+                                    <p class="mt-3"><strong>Availble Coupons</strong></p>
+                                    <div class="card card-body w-50" id="activeCoupons">
                                         <% if(couponDetails && couponDetails.length > 0){%>
                                             <% couponDetails.forEach((coupon, index) => {%>
                                         <div class="coupon">
                                             <input type="radio" name="couponRadio" id="coupon<%= index %>" class="coupon-radio" data-code="<%= coupon.couponCode %>" />
-                                            <label for="coupon<%= index %>"> <sup class="text-danger">*</sup> <span class="coupon-code">#Code : <%=coupon.couponCode%></span></label>
+                                            <label for="coupon<%= index %>"><span class="coupon-code">#Code : <%=coupon.couponCode%></span></label>
                                            <!-- <label for="coupon<%= index %>"><sup class="text-danger">*</sup> <%= coupon.couponCode %></label> -->
                                             <span class="text-dark mr-4 ml-4">-</span>
                                             <span class="coupon-discount">Discount : Rs.<%=coupon.discount%></span>
@@ -381,6 +379,22 @@
                                             <%})%>
                                         <%}else{%>
                                             <p class="text-dark">Coupons are not available</p>
+                                       <%}%>
+                                    </div>
+                                    <p class="mt-2"><strong>Applied Coupon</strong></p>
+                                    <div class="card card-body w-50 " id="appliedCoupons">
+                                        <% if(appliedCouponDetails && appliedCouponDetails.length > 0){%>
+                                            <% appliedCouponDetails.forEach((coupon, index) => {%>
+                                        <div class="coupon">
+
+                                            <label for="coupon"> <sup class="text-danger">*</sup> <span class="coupon-code">#Code : <%=coupon.couponCode%></span></label>
+
+                                            <span class="text-dark mr-4 ml-4">-</span>
+                                            <span class="coupon-discount">Discount : Rs.<%=coupon.discount%></span>
+                                        </div>
+                                            <%})%>
+                                        <%}else{%>
+                                            <p class="text-dark">Coupon are not applied</p>
                                        <%}%>
                                     </div>
 								</div>
@@ -970,11 +984,9 @@ let cartEmptyMessage = $('#cartEmptyMessage').text();
         data : {couponCode : couponCode},
         success : (response) => {
             if(response.success){
-                const discount = response.coupon.discount
-                const couponApplied = response.userCart.couponApplied
-                
-                couponAppliedGrandTotal(discount);
-                
+               
+               const couponId = response.couponId 
+                // couponAppliedGrandTotal(discount);
                 
                 Toastify({
                     text : response.message,
@@ -984,6 +996,10 @@ let cartEmptyMessage = $('#cartEmptyMessage').text();
                     position : 'right',
                     backgroundColor : '#28a745'
                 }).showToast();
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
                 
             }
             else{
@@ -1024,12 +1040,12 @@ $('#removeCouponButton').click(function(event){
     $.ajax({
         url : '/removeCoupon',
         method : 'post',
+        data : {couponCode : couponCode},
         success : (response) => {
             if(response.success){
             
-            
-            const totalCost = parseFloat(response.userCart.totalCost);
-            $('#grandTotal').text(`Rs.${totalCost}`);
+            // const totalCost = parseFloat(response.userCart.totalCost);
+            // $('#grandTotal').text(`Rs.${totalCost}`);
                 
             Toastify({
                     text : response.message,
@@ -1037,8 +1053,12 @@ $('#removeCouponButton').click(function(event){
                     close : true,
                     gravity : 'top',
                     position : 'right',
-                    backgroundColor : '#dc3545'
+                    backgroundColor : '#28a745'
                 }).showToast();
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
 
             }
             else{
@@ -1054,6 +1074,14 @@ $('#removeCouponButton').click(function(event){
             }
 
             
+        },
+        error : (error) => {
+            console.log('Error occur :', error);
+            Swal.fire({
+                title : 'Error!',
+                text : 'Somting went wrong, please try again',
+                icon : 'error'
+            })
         }
     })
 })
@@ -1410,7 +1438,7 @@ $('#grandTotal').text(`Rs.${newGrandTotal}`);
                 method : "post",
                 data : {selectAddressId : selectedAddressId,
                        paymentMethod : paymentMethod,
-                       orderId : orderId ? orderId : ''},
+                       orderId : orderId ? orderId : '' },
                 success : (response) => {
 
                     if(response.success){

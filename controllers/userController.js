@@ -19,6 +19,7 @@ const Wallet = require('../models/walletModel');
 const { use } = require("bcrypt/promises");
 const { findById } = require("../models/categoryModel");
 const { query } = require("express");
+const Offer = require("../models/offerModel");
 
 
 
@@ -36,11 +37,11 @@ const loadHomePage = async(req,res) => {
         const productsData = await Products.find({
             isBlocked : false,
             'category.categoryId':{$nin : unListedCategory.map(cat => cat._id)}
-        }).populate({
+        }).sort({ createdAt: 1}).limit(6).populate({
             path : 'category',
             match : {isListed : true},
             select : 'name'
-        }).sort({ _id : -1}).limit(6); 
+        }); 
 
         if(user){
             res.render("userView/home",{user : findUser , product : productsData});
@@ -281,15 +282,18 @@ const resendOtp = async(req,res) => {
 
 const logoutUser = (req,res) => {
     try{
-       req.session.destroy((error) => {
-        if(error){
-            console.log("Logout error",error.message);
-        }
-        else{
-            res.redirect("/login");
-            console.log("User logout successful");
-        }
-    })
+    //    req.session.destroy((error) => {
+    //     if(error){
+    //         console.log("Logout error",error.message);
+    //     }
+    //     else{
+    //         res.redirect("/login");
+    //         console.log("User logout successful");
+    //     }
+    // })
+    req.session.user = null
+    res.redirect("/login");
+    console.log("User logout successfull");
       
     }catch(error){
         console.log("Error during logout",error.message);
@@ -301,18 +305,79 @@ const logoutUser = (req,res) => {
 
 const getProductDetails = async(req,res) => {
     try{
-        // res.render("userView/productDetails");
-        // console.log("Product details page is render");
+
         const userId = req.session.user
         console.log(`user Id in the product details : ${userId}`);
 
         const productId = req.query.id;
         console.log(`Product Id in the product details: ${productId}`);
 
-        const findProduct = await Products.findById({_id : productId});
+        const findProduct = await Products.findById(productId);
         console.log(`find product id for product details : ${findProduct._id}`);
 
         const allProducts = await Products.find({isBlocked : false});
+
+        const productOffer = await Offer.find({
+            offerType : 'Product',
+            'productOffer.productId' : findProduct._id,
+            isActive : true
+        });
+
+        console.log('available product offer ===>', productOffer);
+
+        let maxProductDiscount = 0;
+        productOffer.forEach(offer => {
+            if(offer.productOffer.discount > maxProductDiscount){
+                maxProductDiscount = offer.productOffer.discount
+            }
+        });
+
+        console.log('max product discount ===>', maxProductDiscount);
+
+        findProduct.productOrginalPrice = findProduct.salePrice + maxProductDiscount
+        findProduct.hasProductOffer = maxProductDiscount > 0
+        findProduct.maxProductDiscount = maxProductDiscount
+
+
+        const categoryOffer = await Offer.find({
+            offerType : 'Category',
+            'categoryOffer.categoryId' : findProduct.category.categoryId,
+            isActive : true
+        });
+        console.log('available category offer =====>', categoryOffer);
+
+        let maxCategoryOfferDiscount = 0;
+        categoryOffer.forEach(offer => {
+            if(offer.categoryOffer.discount > maxCategoryOfferDiscount){
+                 maxCategoryOfferDiscount = offer.categoryOffer.discount
+            }
+        });
+
+        console.log('max category offer discount ====>', maxCategoryOfferDiscount);
+
+        findProduct.categoryOrginalPrice = findProduct.salePrice + maxCategoryOfferDiscount
+        findProduct.hasCategoryOffer = maxCategoryOfferDiscount > 0
+        findProduct.maxCategoryOfferDiscount = maxCategoryOfferDiscount
+
+
+        let maxAvailableDiscount = 0
+
+        if(findProduct.hasProductOffer && findProduct.hasCategoryOffer){
+            console.log('1')
+            maxAvailableDiscount = maxProductDiscount
+        }
+       else if(findProduct.hasProductOffer){
+            console.log('2')
+            maxAvailableDiscount = maxProductDiscount
+        }
+        else if(findProduct.hasCategoryOffer){
+            console.log('3')
+            maxAvailableDiscount = maxCategoryOfferDiscount
+        }
+
+        findProduct.availableOriginalPrice = findProduct.salePrice + maxAvailableDiscount
+        findProduct.availableDiscount = maxAvailableDiscount
+    
 
         if(userId){
             res.render("userView/productDetails",{user : userId , product : findProduct, allProduct : allProducts});
@@ -389,16 +454,20 @@ const getWalletDetails = async(req, res) => {
     try{
         const userId = req.session.user
         const currentPage = parseInt(req.query.page) || 1
-        const limit = 5
+        const limit = 6
         const skip = (currentPage - 1) * limit
 
         const wallet = await Wallet.findOne({user : userId})
-
+        if(wallet){
         const totalCount = wallet.history.length
         const totalPage = Math.ceil(totalCount / limit);
         const transaction = wallet.history.slice(skip, skip + limit);
 
         res.json({transaction : transaction, totalPage : totalPage});
+        }
+        else{
+            console.log("user have no wallet");
+        }
 
     }catch(error){
         console.log("Error in getting wallet details with pagination :", error.message);
@@ -606,19 +675,66 @@ const getShopPage = async(req,res) => {
         
        const totalCount = await Products.countDocuments(query);
 
-       const product = await Products.find(query)
+       const products = await Products.find(query)
          .populate('category.categoryId').skip(skip).limit(limit)
   
 
+        for(const product of products){
+
+
+            const productOffers = await Offer.find({
+                offerType : 'Product',
+                'productOffer.productId' : product._id,
+                isActive : true
+            });
+
+
+            let maxProductDiscount = 0
+            productOffers.forEach(offer => {
+                if(offer.productOffer.discount > maxProductDiscount){
+                    maxProductDiscount = offer.productOffer.discount
+                }
+            });
+
+            product.productOrginalPrice = product.salePrice + maxProductDiscount
+            product.hasProductOffer = maxProductDiscount > 0
+            product.maxProductDiscount = maxProductDiscount
+
+
+           let maxCategoryDiscount = 0;
+            const existingCategoryOffers = await Offer.find({
+                offerType : 'Category',
+                'categoryOffer.categoryId' : product.category.categoryId._id,
+                isActive : true
+            });
+
+            existingCategoryOffers.forEach(offer => {
+                if(offer.categoryOffer.discount > maxCategoryDiscount){
+                    maxCategoryDiscount = offer.categoryOffer.discount
+                }
+            });
+
+            product.categoryOrginalPrice = product.salePrice + maxCategoryDiscount
+            product.hasDiscount = maxCategoryDiscount > 0
+            product.maxDiscount = maxCategoryDiscount
+
+
+            if(product.hasProductOffer && product.hasDiscount){
+
+                    product.availableOriginalPrice = product.salePrice + maxProductDiscount
+                    product.availableDiscount = maxProductDiscount
+            }
+        
+        }
+
         res.render('userView/shop',{
             user : userId,
-            product : product,
+            product : products,
             category : category,
             query : searchQuery,
-            noItemsFound : product.length === 0,
+            noItemsFound : products.length === 0,
             currentPage : page,
-            totalPages : Math.ceil(totalCount / limit)
-            
+            totalPages : Math.ceil(totalCount / limit),
         });
     }catch(error){
         console.log('Error in getting shop page : ',error.message);
@@ -652,17 +768,65 @@ const filterCategory = async(req,res) => {
 
         const totalCount = await Products.countDocuments(queryConditon);
 
-       let product = await Products.find(queryConditon).populate('category.categoryId')
+       let products = await Products.find(queryConditon).populate('category.categoryId')
          .skip(skip).limit(limit)
+
+         for(const product of products){
+
+
+            const productOffers = await Offer.find({
+                offerType : 'Product',
+                'productOffer.productId' : product._id,
+                isActive : true
+            });
+
+
+            let maxProductDiscount = 0
+            productOffers.forEach(offer => {
+                if(offer.productOffer.discount > maxProductDiscount){
+                    maxProductDiscount = offer.productOffer.discount
+                }
+            });
+
+            product.productOrginalPrice = product.salePrice + maxProductDiscount
+            product.hasProductOffer = maxProductDiscount > 0
+            product.maxProductDiscount = maxProductDiscount
+
+
+           let maxCategoryDiscount = 0;
+            const existingCategoryOffers = await Offer.find({
+                offerType : 'Category',
+                'categoryOffer.categoryId' : product.category.categoryId._id,
+                isActive : true
+            });
+
+            existingCategoryOffers.forEach(offer => {
+                if(offer.categoryOffer.discount > maxCategoryDiscount){
+                    maxCategoryDiscount = offer.categoryOffer.discount
+                }
+            });
+
+            product.categoryOrginalPrice = product.salePrice + maxCategoryDiscount
+            product.hasDiscount = maxCategoryDiscount > 0
+            product.maxDiscount = maxCategoryDiscount
+
+
+            if(product.hasProductOffer && product.hasDiscount){
+
+                    product.availableOriginalPrice = product.salePrice + maxProductDiscount
+                    product.availableDiscount = maxProductDiscount
+            }
+        
+        }
 
         res.render('userView/shop',{
             user : userId,
-            product : product,
+            product : products,
             category : categories,
             query : searchQuery,
             currentPage : page,
             totalPages : Math.ceil(totalCount / limit),
-            noItemsFound : product.length <= 0,
+            noItemsFound : products.length <= 0,
             categoryId : categoryId
         })
     }catch(error){
@@ -978,22 +1142,46 @@ const sortProductsWithOption = async(req,res) => {
 const updateUserDetails = async(req,res) => {
     try{
         const userId = req.session.user
-        const {name, mobile, password} = req.body;
+        const {name, mobile, currentPassword, password} = req.body;
 
-        const hashPassword = await userHelper.securePassword(password)
+        const user = await User.findById(userId)
+
+
+        if(!user){
+            return res.status(404).json({status : false, message : 'User not found'});
+        }
+
+
+        if(currentPassword){
+            if(!password){
+                return res.json({message : 'Enter a new password'});
+            }
+        const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+
+        if(!isPasswordMatch){
+            console.log("Current password is not match");
+            return res.json({message : 'Current password is not match'});  
+        }
+    }
+
+    let updatedFields = {name, mobile}
+
+    if(password){
+        if(!currentPassword){
+            return res.json({message : 'Enter the current password'});
+        }
+        const hashPassword = await userHelper.securePassword(password);
         console.log("hashhhh =======> : ",hashPassword)
-        const updateUser = await User.findByIdAndUpdate(userId,{
-                name : name,
-                mobile : mobile,
-                password : hashPassword
+        updatedFields.password = hashPassword
+    }
 
-            },{new : true});
+        const updateUser = await User.findByIdAndUpdate(userId, updatedFields, {new : true});
 
             if(!updateUser){
-                return res.json({status : false, message : "User not found!"});
+                return res.json({status : false, message : "User not found"});
             }
-            
-            res.json({status : true, message : "Account details updated!"});
+            console.log("Account updated");
+            res.json({status : true, message : "Account details updated"});
 
     }catch(error){
         console.log("Error in updating user details : ",error.message);

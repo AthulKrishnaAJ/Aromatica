@@ -372,10 +372,20 @@
                             </div>
                             <div class="price-box">
                                 <span class="regular-price">
+                                <% if(product.hasProductOffer && product.hasCategoryOffer){%>
+                                    <p class="product-price"><span>Rs.<%= product.availableOriginalPrice %>.00</span></p>
                                     
-                                    <p class="product-price"><span>Rs.<%= product.regularPrice %>.00</span></p>
-                                    <span class="price">Rs.<%= product.salePrice %>.00</span> 
+                                <%}else if(product.hasProductOffer || product.hasCategoryOffer){%>
+                                    <p class="product-price"><span>Rs.<%= product.availableOriginalPrice%>.00</span></p>
+                                    <%}%>
+                                    <span class="price">Rs.<%= product.salePrice %>.00</span>
                                 </span>
+                                <% if(product.hasProductOffer && product.hasCategoryOffer){%>
+                                <span style="font-size: 13px;" class="text-success">Off <%=product.availableDiscount%> /-</span>
+                                
+                                <% }else if(product.hasProductOffer || product.hasCategoryOffer){%>
+                                <span style="font-size: 13px;" class="text-success">Off <%=product.availableDiscount%> /-</span>
+                                    <%}%>
                             </div>
                             <% if(product.quantity){%>
                             <p class="availability in-stock">Availability: <span>In stock</span></p>

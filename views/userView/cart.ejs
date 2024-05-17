@@ -459,10 +459,15 @@
 											<p><b>GRAND TOTAL</b> </p>
 										</div>
 									</div>
+
 									<div class="shiping-cart-button">
+									<% if(cart && cart.items && cart.items.length > 0){%>
+
 									<a href="/checkOut"><button type="button" class="btn">Proceed to Checkout</button></a>
 									</div>
-									<a href="#">Checkout with Multiple Addresses</a>
+									<a href="/checkOut">Checkout with Multiple Addresses</a>
+									<%}%>
+
 								</div>
 							</div>
 						</div>

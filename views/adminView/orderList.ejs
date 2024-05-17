@@ -88,9 +88,14 @@
                 </li>
                
                
-                <li class="menu-item">
-                    <a class="menu-link" href="/admin/getOffer"> <i class="icon material-icons md-stars"></i>
-                        <span class="text">Add offer</span> </a>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="#"> <i class="icon material-icons md-stars"></i>
+                        <span class="text">Offers</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/getCategoryOffer">Category Offer</a>
+                        <a href="/admin/getProductOffer">Product Offer</a>
+                    </div>
                 </li>
 
 
@@ -275,7 +280,7 @@
             <ul class="pagination justify-content-start">
                 <% for(let i = 1; i <= totalPage; i++){%>
                     <li class="page-item <%= currentPage == i ? 'active' : ''%>">
-                        <a class="page-link" href="#" data-page="<%= i %>"><%= i %></a>
+                        <a class="page-link" href="/admin/orderList?page=<%= i%>" ><%= i %></a>
                     </li>
                <% } %>
             </ul>
@@ -292,24 +297,24 @@
 
 <script>
 
-    $(document).on("click",".pagination .page-link",function(event){
-        event.preventDefault();
-        $(".pagination .page-item").removeClass('active');
-        const page = $(this).data("page");
+    // $(document).on("click",".pagination .page-link",function(event){
+    //     event.preventDefault();
+    //     $(".pagination .page-item").removeClass('active');
+    //     const page = $(this).data("page");
 
-        $.ajax({
-            url : `/admin/orderList?page=${page}`,
-            method : "get",
-            success : (response) => {
-                $("tbody").html($(response).find("tbody").html());
-                $(this).parent().addClass('active');
-                cancelOrder();
-            },
-            error :(error) => {
-                console.log(`ajaxxxx error : ${error}`);
-            }
-        })
-    })
+    //     $.ajax({
+    //         url : `/admin/orderList?page=${page}`,
+    //         method : "get",
+    //         success : (response) => {
+    //             $("tbody").html($(response).find("tbody").html());
+    //             $(this).parent().addClass('active');
+    //             cancelOrder();
+    //         },
+    //         error :(error) => {
+    //             console.log(`ajaxxxx error : ${error}`);
+    //         }
+    //     })
+    // })
   
     
       $(document).ready(function(){

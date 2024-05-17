@@ -84,9 +84,28 @@ route.post('/generatePdf', isAdmin, adminController.generatePdf);
 
 
 
-// offer actions
-route.get('/getOffer', isAdmin, offerController.getOfferPage);
-route.post('/addOffer', isAdmin, offerController.addOffer)
+// category offer actions
+route.get('/getCategoryOffer', isAdmin, offerController.getCategoryOffer);
+route.post('/addCategoryOffer', isAdmin, offerController.addCategoryOffer);
+route.put('/unlistCategoryOffer/:offerId', isAdmin, offerController.unlistCategoryOffer);
+route.put('/listCategoryOffer/:offerId', isAdmin, offerController.listCategoryOffer);
+// route.get('/getCategoryOfferDetails/:offerId', isAdmin, offerController.getCategoryOfferDetails)
+// route.post('/updateCategoryOffer', isAdmin, offerController.updateCategoryDetails);
+route.delete('/deleteOffer/:offerId', isAdmin, offerController.deleteOffer)
+
+
+
+// product offer actions
+route.get('/getProductOffer', isAdmin, offerController.getProductOfferPage);
+route.post('/addProductOffer', isAdmin, offerController.addProductOffer);
+route.put('/unlistProductOffer/:offerId', isAdmin, offerController.unlistProductOffer);
+route.put('/listProductOffer/:offerId', isAdmin, offerController.listProductOffer);
+// route.get('/getProductOfferDetails/:offerId', isAdmin, offerController.getProductOfferDetailsForEdit)
+// route.post('/updateProductOffer', isAdmin, offerController.updateProductOffer)
+route.delete('/deleteProductOffer/:offerId', isAdmin, offerController.deleteProductOffer);
+
+
+
 
 module.exports = route
 

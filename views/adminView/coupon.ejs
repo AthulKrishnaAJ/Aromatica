@@ -100,9 +100,14 @@
                
                
                
-                <li class="menu-item">
-                    <a class="menu-link" href="/admin/getOffer"> <i class="icon material-icons md-stars"></i>
-                        <span class="text">Add offer</span> </a>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="#"> <i class="icon material-icons md-stars"></i>
+                        <span class="text">Offers</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/getCategoryOffer">Category Offer</a>
+                        <a href="/admin/getProductOffer">Product Offer</a>
+                    </div>
                 </li>
 
 
@@ -354,10 +359,6 @@
                         <label for="recipient-name" class="col-form-label">Coupon Name</label>
                         <input type="text" class="form-control" name="editCouponName" id="editCouponName">
                     </div>
-                    <!-- <div class="mb-3">
-                        <label for="recipient-name" class="col-form-label">Coupon Code</label>
-                        <input type="text" class="form-control" name="couponCode" id="couponCode">
-                    </div> -->
                     <div class="mb-3">
                         <label for="recipient-name" class="col-form-label">Discount Amount</label>
                         <input type="text" class="form-control" name="editCouponAmount" id="editCouponAmount">
@@ -605,7 +606,7 @@
                     $('#discountError').text('Should contain positive digits');
                     isValid = false
                 }
-                else if(discount >= minimumPrice){
+                else if(parseFloat(discount) >= parseFloat(minimumPrice)){
                     $('#discountError').text('Discount must be less than minimum price ');
                     isValid = false
                 }

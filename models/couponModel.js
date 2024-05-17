@@ -40,7 +40,12 @@ const couponSchema = new mongoose.Schema({
     isActive : {
         type : Boolean,
         default : true
-    }
+    },
+    isRedeemed : {
+        type : String,
+        enum : ['not-redeemed', 'redeemed'],
+        default : 'not-redeemed'
+    },
 }, {timestamps : true});
 
 

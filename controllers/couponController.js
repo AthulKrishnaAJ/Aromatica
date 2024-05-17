@@ -8,6 +8,9 @@ const cron = require('node-cron');
 const Coupon = require('../models/couponModel');
 const adminHelper = require('../helpers/adminHelper')
 const Cart = require('../models/cartModel');
+const { json } = require('express');
+const User = require('../models/userModel');
+const Order = require('../models/orderModel');
 
 
 
@@ -136,6 +139,7 @@ const couponApply = async(req,res) => {
         const userId = req.session.user
         console.log(">=>=>=>=>",couponCode);
 
+
         const userCart = await Cart.findOne({user : userId});
 
         if(!userCart){
@@ -143,6 +147,7 @@ const couponApply = async(req,res) => {
         }
 
         const coupon = await Coupon.findOne({couponCode : couponCode, isActive : true});
+
         if(!coupon){
             return res.json({success : false, message : "Invalid coupon code"});
         }
@@ -151,25 +156,45 @@ const couponApply = async(req,res) => {
             return res.json({success : false, message : "Coupon expired"});
         }
 
-        const userAlreadyUsed = coupon.usedBy.find(id => id.toString() === userId.toString())
-        if(userAlreadyUsed){
-            return res.json({success : false, message : "Coupon already used"});
+        // if(coupon.isRedeemed === 'redeemed'){
+        //     console.log("Coupon redeemed");
+        //     return res.json({success : false, message : 'Coupon redeemed'});
+        // }
+        
+        const userOrder = await Order.find({user : userId});
+
+        for(const order of userOrder){
+        if(order.couponDetails && order.couponDetails.couponId && order.couponDetails.couponId.toString() === coupon._id.toString()){
+            console.log("Coupon redeemed");
+            return res.json({success : false, message : 'Coupon redeemed'});
         }
+    }
 
-        if(userCart.appliedCoupon || userCart.appliedCoupon === coupon._id){
-            return res.json({success : false, message : "Already this coupon"});
-        }
 
-        userCart.totalCost -= coupon.discount
-        userCart.appliedCoupon = coupon._id
+        const alreadyUse = userCart.appliedCoupon.find(id => id.toString() === coupon._id.toString())
 
+       if(alreadyUse){
+         console.log('Same coupon already used');
+         return res.json({success : false, message : 'Coupon already used'});
+       }
+
+       if(userCart.appliedCoupon.length > 0){
+        console.log('Only one coupon will be allowed');
+        return res.json({success : false, message : 'One coupon will be allowed'});
+    }
+
+    
+
+        userCart.totalCost = userCart.totalCost - coupon.discount;
+        userCart.appliedCoupon.push(coupon._id);
+         
         coupon.usedBy.push(userId);
 
         await Promise.all([coupon.save(), userCart.save()]);
 
         console.log("Coupon applied");
-        res.json({success : true, message : "Coupon applied", userCart : userCart, coupon : coupon});
-
+        res.json({success : true, message : "Coupon applied", userCart : userCart, couponId : coupon._id});
+    
     }catch(error){
         console.log("Error in applying coupon :",error.message);
         res.status(500).send("Internal server error");
@@ -183,20 +208,25 @@ const couponApply = async(req,res) => {
 const removeCoupon = async(req,res) => {
     try{
         const userId = req.session.user
+        const couponCode = req.body.couponCode
 
         const  userCart = await Cart.findOne({user : userId});
         if(!userCart){
             console.log("Cannot find the cart this user...");
-            return;
+            return res.json({success : false, message : 'Cart not found'});
         }
         
-        if(!userCart.appliedCoupon){
-            return res.json({success : false, message : "Coupons are not applied"});
+        if(!userCart.appliedCoupon || userCart.appliedCoupon.length === 0){
+            return res.json({success : false, message : "Coupon is not applied"});
         }
 
-        const coupon = await Coupon.findById(userCart.appliedCoupon);
+        const coupon = await Coupon.findOne({couponCode : couponCode});
         if(!coupon){
             return res.json({success : false, message : "Coupon not found"});
+        }
+
+        if(!userCart.appliedCoupon.includes(coupon._id.toString())){
+            return res.json({success : false, message : 'Coupon does not match for removing'});
         }
 
         userCart.totalCost = userCart.totalCost + coupon.discount
@@ -206,7 +236,7 @@ const removeCoupon = async(req,res) => {
             coupon.usedBy.splice(index, 1);
         }
 
-        userCart.appliedCoupon = null
+        userCart.appliedCoupon = []
 
         await Promise.all([userCart.save(), coupon.save()]);
 

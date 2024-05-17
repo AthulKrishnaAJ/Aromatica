@@ -79,7 +79,7 @@ const getSalesReportPage =  async(req, res) => {
         })
 
         const currentPage = parseInt(req.query.page) || 1
-        const limit = 5
+        const limit = 6
         const skip = (currentPage - 1) * limit
 
         const totalCount = await Order.countDocuments({
@@ -98,16 +98,21 @@ const getSalesReportPage =  async(req, res) => {
         })
 
         let overAllDiscount = 0;
+        let totalAmount = 0;
+        let netDiscount = 0
+
         for(const order of orderDetails){
             if(order.couponDetails.discountAmount){
                 overAllDiscount += order.couponDetails.discountAmount
             }
+            for(const item of order.items){
+                totalAmount += item.price
+            }
+
         }
 
-        let totalAmount = 0;
-        for(const order of orderDetails){
-            totalAmount += order.totalCost
-        }
+          netDiscount = totalAmount - overAllDiscount
+
 
         const totalPage = Math.ceil(totalCount / limit);
 
@@ -118,7 +123,8 @@ const getSalesReportPage =  async(req, res) => {
             currentPage :  currentPage, 
             orderCount : orderCount,
             overAllDiscount : overAllDiscount,
-            totalAmount : totalAmount
+            totalAmount : totalAmount,
+            netDiscount : netDiscount
         });
     }catch(error){
         console.log("Error in getting sales report page :",error.message);
@@ -142,7 +148,7 @@ const getCustomSalesReport = async(req, res) => {
         console.log(`start date is ======>${startDate} & end date is =======>${endDate}`);
 
         const currentPage = parseInt(req.query.page) || 1
-        const limit = 5
+        const limit = 6
         const skip = (currentPage -1 ) * limit
 
         const orderCount = await Order.countDocuments({
@@ -165,16 +171,17 @@ const getCustomSalesReport = async(req, res) => {
         })
 
         let overAllDiscount = 0;
+        let totalAmount = 0;
+        let netDiscount = 0;
         for(const order of orderDetails){
             if(order.couponDetails.discountAmount){
                 overAllDiscount += order.couponDetails.discountAmount
             }
+            totalAmount += order.totalCost
+
         }
 
-        let totalAmount = 0;
-        for(const order of orderDetails){
-            totalAmount += order.totalCost
-        }
+        netDiscount = totalAmount - overAllDiscount
 
         const totalPage = Math.ceil(totalCount / limit);
 
@@ -187,7 +194,8 @@ const getCustomSalesReport = async(req, res) => {
             endDate : endDate,
             orderCount : orderCount,
             overAllDiscount : overAllDiscount,
-            totalAmount : totalAmount
+            totalAmount : totalAmount,
+            netDiscount : netDiscount
         });
 
 

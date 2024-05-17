@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
+const { required } = require('nodemon/lib/config');
+
 
 const offerSchema = new mongoose.Schema({
 
     name : {
         type : String,
-        required : true
-    },
-    startDate : {
-        type : Date,
         required : true
     },
     endDate : {
@@ -19,23 +17,52 @@ const offerSchema = new mongoose.Schema({
         enum : ['Product', 'Category'],
         required : true
     },
-    discount : {
-        type : Number,
-        required : true
+    productOffer : {
+        productId : {
+            type : mongoose.Schema.Types.ObjectId,
+            ref : 'Product',
+
+        },
+        discount : {
+            type : Number,
+
+
+        },
+        offerStatus : {
+            type : Boolean,
+            default : false
+        }
     },
-    productId : {
-        type : mongoose.Schema.Types.ObjectId,
-        required : true
-    },
+   categoryOffer : {
     categoryId : {
         type : mongoose.Schema.Types.ObjectId,
-        required : true
+        ref : 'Category',
+
     },
+    discount : {
+        type : Number,
+
+    },
+    offerStatus : {
+        type : Boolean,
+        default : false
+    }
+   },
     isActive : {
         type : Boolean,
         default : true
     }
+}, {timestamps : true});
+
+
+offerSchema.pre('save', function(next){
+    const currentDate = new Date();
+    if(currentDate > this.endDate){
+        this.isActive = false
+    }
+    next();
 });
+
 
 const Offer = mongoose.model("Offer", offerSchema);
 module.exports = Offer

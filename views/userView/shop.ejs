@@ -370,11 +370,48 @@
                                     <img class="primary-img" src="/uploads/product-images/<%=item.productImage[0]%>" alt="product">
                                     <img class="secondary-img" src="/uploads/product-images/<%=item.productImage[1]%>" alt="product">
                                 </a>
+                                <% if(item.hasProductOffer && item.hasDiscount){%>
+                                <div class="product-status">
+                                    <span class="product-new">Off <%= item.availableDiscount %>/-</span>
+                                </div>
+                                <%}else{%>
+                                <% if (item.hasProductOffer || item.hasDiscount) { %>
+                                <div class="product-status">
+                                    <% if(item.hasProductOffer){%>
+                                    <span class="product-new">Off <%= item.maxProductDiscount %>/-</span>
+                                    <%}%>
+                                    <% if(item.hasDiscount){%>
+                                    <span class="product-new">Off <%= item.maxDiscount %>/-</span>
+                                    <%}%>
+                                </div>
+                                <% } %>
+                            <% } %>
+
                             </div>
                             <div class="single-product-content">
                                 <div class="product-content-head">
                                     <h2 class="product-title"><a href="#"><%=item.productName%></a></h2>
-                                    <p class="product-price"><span><%=item.regularPrice%>.00</span>Rs.<%=item.salePrice%>.00</p>
+                                    <p class="product-price">
+                                        <% if(item.hasProductOffer && item.hasDiscount){%>
+
+                                        <span><%=item.availableOriginalPrice%>.00</span>Rs.<%=item.salePrice%>.00
+
+                                        <%}else{%>
+
+                                        <% if(item.hasProductOffer){%>
+                                        <span><%=item.productOrginalPrice%>.00</span>Rs.<%=item.salePrice%>.00
+                                            <%}%>
+
+                                        <% if(item.hasDiscount){%>
+                                        <span><%=item.categoryOrginalPrice%>.00</span>Rs.<%=item.salePrice%>.00
+
+                                        <%}%>
+                                        <% if(!item.hasProductOffer && !item.hasDiscount){%>
+                                            <span></span>Rs.<%= item.salePrice %>.00
+                                        <%}%>
+                                    <%}%>
+
+                                    </p>
                                 </div>
                                 <div class="product-bottom-action">
                                     <div class="product-action">

@@ -13,7 +13,7 @@ const getCart = async(req,res) => {
         const couponDetails = await Coupon.find({isActive : true});
         const cart = await Cart.findOne({user : userId}).populate('items.product');
         
-        if(cart && cart.items.length > 0){
+        if(cart && cart.items.length > 0){  
         const productId = cart.items.map(item => item.product._id);
         const products = await Products.find({_id : {$in : productId}})
 
@@ -32,6 +32,22 @@ const getCart = async(req,res) => {
 
         cart.totalQuantity = totalQuantity
         cart.totalCost = totalCost
+
+        if(cart.appliedCoupon.length > 0){
+
+            for(const couponId of cart.appliedCoupon){
+                const coupon = await Coupon.findById(couponId)
+                if(coupon){
+                    const index = coupon.usedBy.indexOf(userId)
+                    if(index !== -1){
+                        coupon.usedBy.splice(index, 1);
+                        await coupon.save();
+                    }
+                }
+            }
+            cart.appliedCoupon = []
+            console.log('Remove coupon id from the cart details and user id from the coupon details');
+        }
         
         await cart.save();
     }
@@ -191,7 +207,7 @@ const removeProduct = async(req,res) => {
 
             if(discountPrice !== ''){
                 cart.totalCost = cart.totalCost + discountPrice
-                cart.appliedCoupon = null
+                cart.appliedCoupon = []
                 console.log("Enter handle discount price when user remove the product...");
             }
 

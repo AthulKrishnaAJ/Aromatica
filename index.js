@@ -33,7 +33,7 @@ mongoose.connection.on("disconnected",() => {
 dotEnv.config()
 
 const app = express();
-const Port = process.env.PORT || 2012
+const Port = process.env.PORT || 2018
 
 
 //Set view engine
@@ -58,7 +58,7 @@ app.use(session({
     secret : uuid.v4(),
     resave : false,
     saveUninitialized : false,
-    cookie : {maxAge:600000}
+    cookie : {maxAge:1200000}
  
 }));
 
